@@ -781,6 +781,149 @@ int modeChoosing(sf::RenderWindow& window) {
 	return -1;
 }
 
+int loadGameScreen(sf::RenderWindow& window)
+{
+	// ============ LOAD TEXTURES ============
+	sf::Texture bgT, tableT, titleT;
+	bgT.loadFromFile("Assets/background_menu.png");
+	tableT.loadFromFile("Assets/load_table.png");
+	titleT.loadFromFile("Assets/load_title.png");
+
+	sf::Sprite bg(bgT), table(tableT), title(titleT);
+	bg.setScale(4.26875f, 4.267f);
+	table.setScale(4.26875f, 4.267f);
+	title.setScale(4.26875f, 4.267f);
+
+	// ===== BLANKS =====
+	const int slotCount = 5;
+	sf::Texture blankT[slotCount];
+	sf::Sprite blankS[slotCount];
+	for (int i = 0; i < slotCount; ++i) {
+		std::string path = "Assets/blank" + std::to_string(i + 1) + ".png";
+		blankT[i].loadFromFile(path);
+		blankS[i].setTexture(blankT[i]);
+		blankS[i].setScale(4.26875f, 4.267f);
+	}
+
+	// ===== BUTTONS =====
+	sf::Texture tOnLoad, tOffLoad, tOnDelete, tOffDelete, tOnRename, tOffRename;
+	sf::Texture tOnExit, tOffExit;
+	tOnLoad.loadFromFile("Assets/on_load_button.png");
+	tOffLoad.loadFromFile("Assets/off_load_button.png");
+	tOnDelete.loadFromFile("Assets/on_delete_button.png");
+	tOffDelete.loadFromFile("Assets/off_delete_button.png");
+	tOnRename.loadFromFile("Assets/on_rename_button.png");
+	tOffRename.loadFromFile("Assets/off_rename_button.png");
+	tOnExit.loadFromFile("Assets/on_exit_load_button.png");
+	tOffExit.loadFromFile("Assets/off_exit_load_button.png");
+
+	sf::Sprite btnLoad(tOffLoad), btnDelete(tOffDelete), btnRename(tOffRename), btnExit(tOffExit);
+	btnLoad.setScale(4.26875f, 4.267f);
+	btnDelete.setScale(4.26875f, 4.267f);
+	btnRename.setScale(4.26875f, 4.267f);
+	btnExit.setScale(4.26875f, 4.267f);
+
+	// ===== STATE =====
+	int selectedSlot = 0;   // 0..4 = blank1..5, 5=Load,6=Rename,7=Delete,8=Exit
+	bool inButton = false;
+	int lastSlot = 0;       // nhớ slot trước khi chuyển qua nút
+
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) { window.close(); return 0; }
+
+			if (event.type == sf::Event::KeyPressed) {
+				auto key = event.key.code;
+
+				// ESC thoát
+				if (key == sf::Keyboard::Escape) return 0;
+
+				// ======== VÙNG SLOT ========
+				if (!inButton) {
+					if (key == sf::Keyboard::Down || key == sf::Keyboard::S) {
+						if (selectedSlot < slotCount - 1)
+							selectedSlot++;
+					}
+					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W) {
+						if (selectedSlot > 0)
+							selectedSlot--;
+						else
+							selectedSlot = 8, inButton = true; // từ blank1 lên exit
+					}
+					else if (key == sf::Keyboard::Right || key == sf::Keyboard::D) {
+						inButton = true;
+						lastSlot = selectedSlot;
+						selectedSlot = 5; // sang nút Load
+					}
+				}
+				// ======== VÙNG BUTTON ========
+				else {
+					if (key == sf::Keyboard::Down || key == sf::Keyboard::S) {
+						if (selectedSlot == 8) { // Exit xuống lại blank1
+							inButton = false;
+							selectedSlot = 0;
+						}
+						else if (selectedSlot < 8) selectedSlot++;
+					}
+					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W) {
+						if (selectedSlot == 5) { // Load lên Exit
+							selectedSlot = 8;
+						}
+						else if (selectedSlot > 5) selectedSlot--;
+					}
+					else if (key == sf::Keyboard::Left || key == sf::Keyboard::A) {
+						inButton = false;
+						selectedSlot = lastSlot; // quay về slot cũ
+					}
+				}
+
+				// ======== ENTER CHỌN ========
+				if (key == sf::Keyboard::Enter) {
+					if (!inButton) return selectedSlot + 1; // chọn slot
+					else {
+						switch (selectedSlot) {
+						case 5: return selectedSlot + 1;      // Load
+						case 6: std::cout << "Rename slot selected\n"; break;
+						case 7: std::cout << "Delete slot selected\n"; break;
+						case 8: return 0;                     // Exit
+						}
+					}
+				}
+			}
+		}
+
+		// ===== DRAW =====
+		window.clear();
+		window.draw(bg);
+		window.draw(table);
+		window.draw(title);
+
+		// highlight slot
+		for (int i = 0; i < slotCount; ++i) {
+			blankS[i].setColor(!inButton && selectedSlot == i
+				? sf::Color::White
+				: sf::Color(180, 180, 180, 255));
+			window.draw(blankS[i]);
+		}
+
+		// highlight buttons
+		btnLoad.setTexture(selectedSlot == 5 ? tOnLoad : tOffLoad);
+		btnRename.setTexture(selectedSlot == 6 ? tOnRename : tOffRename);
+		btnDelete.setTexture(selectedSlot == 7 ? tOnDelete : tOffDelete);
+		btnExit.setTexture(selectedSlot == 8 ? tOnExit : tOffExit);
+
+		window.draw(btnLoad);
+		window.draw(btnRename);
+		window.draw(btnDelete);
+		window.draw(btnExit);
+
+		window.display();
+	}
+
+	return 0;
+}
+
 
 void GotoXY(int x, int y) {
 	COORD coord;

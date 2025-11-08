@@ -1,5 +1,22 @@
-﻿#pragma once
-#include "Globals.h"
+﻿#include "Globals.h"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <ctime>
+#include <string>
+#include <sstream>
+
+#ifdef _WIN32
+#include <direct.h> // để dùng _mkdir
+#pragma warning(disable : 4996) // Tắt cảnh báo localtime
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+#pragma execution_character_set("utf-8")
+using namespace std;
 
 // ====================== CẤU TRÚC CHUNG ======================
 
@@ -38,3 +55,10 @@ enum class GameRule
 
 // Hàm tổng hợp kiểm tra kết quả theo luật (nếu muốn gọi chung)
 int TestBoard(GameRule rule);
+
+// ====================== LƯU & TẢI GAME ======================
+bool LoadFromFile(int slot);
+void SaveGame(const std::string& filename, GameRule rule, int result);
+
+extern GameRule _rule;
+
