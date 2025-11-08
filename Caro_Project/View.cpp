@@ -136,22 +136,18 @@ int mainScreen(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::W:
-				case sf::Keyboard::Up:
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::S:
-				case sf::Keyboard::Down:
 					choice = (choice + 1) % totalOptions;
 					break;
 
 				case sf::Keyboard::A:
-				case sf::Keyboard::Left:
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::D:
-				case sf::Keyboard::Right:
 					choice = (choice + 1) % totalOptions;
 					break;
 
@@ -590,7 +586,6 @@ int modeChoosing(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::A:
-				case sf::Keyboard::Left:
 					if (row == 0) {
 						cardChoice--;
 						if (cardChoice < 1) cardChoice = 3;
@@ -598,7 +593,6 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::D:
-				case sf::Keyboard::Right:
 					if (row == 0) {
 						cardChoice++;
 						if (cardChoice > 3) cardChoice = 1;
@@ -606,16 +600,12 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::W:
-				case sf::Keyboard::Up:
-					// Di chuyển lên từ OK button về cards
 					if (row == 1) {
 						row = 0;
 					}
 					break;
 
 				case sf::Keyboard::S:
-				case sf::Keyboard::Down:
-					// Di chuyển xuống từ cards về OK button
 					if (row == 0) {
 						row = 1;
 					}
