@@ -63,19 +63,15 @@ int main() {
                         }
                         switch (event.key.code) {
                         case sf::Keyboard::A:
-                        case sf::Keyboard::Left:
                             MoveLeft();
                             break;
                         case sf::Keyboard::W:
-                        case sf::Keyboard::Up:
                             MoveUp();
                             break;
                         case sf::Keyboard::S:
-                        case sf::Keyboard::Down:
                             MoveDown();
                             break;
                         case sf::Keyboard::D:
-                        case sf::Keyboard::Right:
                             MoveRight();
                             break;
                         case sf::Keyboard::Enter:
@@ -174,7 +170,7 @@ int main() {
 
             break;
         }
-            
+
         case 4: // Thoát
             ExitGame();
             window.close();
@@ -182,7 +178,7 @@ int main() {
         default:
             continue;
         }
-        
+
     }
     return 0;
 }

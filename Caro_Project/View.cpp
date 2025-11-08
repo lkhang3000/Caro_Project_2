@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+﻿#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include "View.h"
 #include "Model.h"
@@ -102,7 +102,8 @@ int mainScreen(sf::RenderWindow& window) {
 	float settingX = 1300.f;
 	if (settingButtonT.getSize().x > 0) {
 		settingX = 1370.f - settingButtonT.getSize().x * 3.26875f - 20.f; // 20px margin
-	} else {
+	}
+	else {
 		// fallback to previous hardcoded value, but log that texture size was zero
 		std::cerr << "Warning: settingButton texture size is zero; using fallback X=1250\n";
 		settingX = 1300.f;
@@ -136,22 +137,18 @@ int mainScreen(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::W:
-				case sf::Keyboard::Up:
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::S:
-				case sf::Keyboard::Down:
 					choice = (choice + 1) % totalOptions;
 					break;
 
 				case sf::Keyboard::A:
-				case sf::Keyboard::Left:
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::D:
-				case sf::Keyboard::Right:
 					choice = (choice + 1) % totalOptions;
 					break;
 
@@ -487,9 +484,15 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 
 
 int modeChoosing(sf::RenderWindow& window) {
+	// Khởi tạo font
+	sf::Font font;
+	if (!font.loadFromFile("Assets/font/regular.ttf")) {
+		std::cerr << "Không thể tải font!\n";
+	}
+
 	//Tải background
 	sf::Texture backgroundT;
-	if (!backgroundT.loadFromFile("Assets/background_menu.png")) {
+	if (!backgroundT.loadFromFile("Assets/background/background_menu.png")) {
 	}
 
 	sf::Sprite bg(backgroundT);
@@ -497,17 +500,17 @@ int modeChoosing(sf::RenderWindow& window) {
 
 	//Tải ảnh từ folder
 	sf::Texture card1Front, card1Back, card1BG, card2Front, card2Back, card2BG, card3Front, card3Back, card3BG, okButton, okButtonDark;
-	card1Front.loadFromFile("Assets/card1.png");
-	card1Back.loadFromFile("Assets/card1_back.png");
-	card1BG.loadFromFile("Assets/card1_unchosen.png");
-	card2Front.loadFromFile("Assets/card2.png");
-	card2Back.loadFromFile("Assets/card2_back.png");
-	card2BG.loadFromFile("Assets/card2_unchosen.png");
-	card3Front.loadFromFile("Assets/card3.png");
-	card3Back.loadFromFile("Assets/card3_back.png");
-	card3BG.loadFromFile("Assets/card3_unchosen.png");
-	okButton.loadFromFile("Assets/ok_button.png");
-	okButtonDark.loadFromFile("Assets/ok_buttonDark.png");
+	card1Front.loadFromFile("Assets/playing/card1.png");
+	card1Back.loadFromFile("Assets/playing/card1_back.png");
+	card1BG.loadFromFile("Assets/playing/card1_unchosen.png");
+	card2Front.loadFromFile("Assets/playing/card2.png");
+	card2Back.loadFromFile("Assets/playing/card2_back.png");
+	card2BG.loadFromFile("Assets/playing/card2_unchosen.png");
+	card3Front.loadFromFile("Assets/playing/card3.png");
+	card3Back.loadFromFile("Assets/playing/card3_back.png");
+	card3BG.loadFromFile("Assets/playing/card3_unchosen.png");
+	okButton.loadFromFile("Assets/button/ok_button.png");
+	okButtonDark.loadFromFile("Assets/button/ok_buttonDark.png");
 
 	double baseScale = 3.1999f;
 	double selectedScale = 3.1999f;
@@ -562,7 +565,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
 	// Tính toán vị trí giữa màn hình
-	float okButtonX = 790.0f;  
+	float okButtonX = 790.0f;
 	float okButtonY = 580.0f;
 
 	int cardChoice = 1;
@@ -574,6 +577,52 @@ int modeChoosing(sf::RenderWindow& window) {
 	int flippingCard = 0;
 	double flipProcess = 0.0f;
 	const double flipSpeed = 4.0f;
+
+	// Text cho Luật chơi
+	// Card 1: Tự do
+	sf::Text freestylesText;
+	freestylesText.setFont(font);
+	std::wstring freestyleString =
+		L"	  LUẬT TỰ DO\n\n"
+		L" Bên nào tạo được hàng\n"
+		L" liên tiếp 5 quân trở \n"
+		L" lên thì sẽ giành được\n"
+		L" chiến thắng.\n";
+	freestylesText.setString(freestyleString);
+	freestylesText.setCharacterSize(27);
+	freestylesText.setFillColor(sf::Color(80, 48, 32));
+	freestylesText.setPosition(120.f, 330.f);
+
+	// Card 2: Tiêu chuẩn
+	sf::Text standardText;
+	standardText.setFont(font);
+	std::wstring standardString =
+		L"   LUẬT TIÊU CHUẨN\n\n"
+		L"Bên nào tạo được hàng\n"
+		L"liên tiếp 5 quân sẽ \n"
+		L"thắng. Nếu nhiều hơn 5\n"
+		L"thì KHÔNG tính thắng,\n"
+		L"ván cờ sẽ tiếp tục.\n";
+	standardText.setString(standardString);
+	standardText.setCharacterSize(27);
+	standardText.setFillColor(sf::Color(80, 48, 32));
+	standardText.setPosition(527.f, 330.f);
+
+	// Card 3: Chặn 2 đầu
+	sf::Text block2endsText;
+	block2endsText.setFont(font);
+	std::wstring blockString =
+		L"	LUẬT CHẶN 2 ĐẦU\n\n"
+		L"Bên nào tạo được hàng\n"
+		L"liên tiếp nhiều hơn 5\n"
+		L"hoặc không bị chặn 2\n"
+		L"đầu thì sẽ thắng.\n"
+		L"Tức là:  XOOOOOX\n"
+		L"-> Không tính thắng.\n";
+	block2endsText.setString(blockString);
+	block2endsText.setCharacterSize(27);
+	block2endsText.setFillColor(sf::Color(80, 48, 32));
+	block2endsText.setPosition(963.f, 330.f);
 
 	sf::Clock clock;
 
@@ -590,7 +639,6 @@ int modeChoosing(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::A:
-				case sf::Keyboard::Left:
 					if (row == 0) {
 						cardChoice--;
 						if (cardChoice < 1) cardChoice = 3;
@@ -598,7 +646,6 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::D:
-				case sf::Keyboard::Right:
 					if (row == 0) {
 						cardChoice++;
 						if (cardChoice > 3) cardChoice = 1;
@@ -606,16 +653,12 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::W:
-				case sf::Keyboard::Up:
-					// Di chuyển lên từ OK button về cards
 					if (row == 1) {
 						row = 0;
 					}
 					break;
 
 				case sf::Keyboard::S:
-				case sf::Keyboard::Down:
-					// Di chuyển xuống từ cards về OK button
 					if (row == 0) {
 						row = 1;
 					}
@@ -630,7 +673,7 @@ int modeChoosing(sf::RenderWindow& window) {
 						}
 					}
 					else {
-						return cardChoice + 1; 
+						return cardChoice + 1;
 					}
 					break;
 
@@ -693,6 +736,7 @@ int modeChoosing(sf::RenderWindow& window) {
 			else {
 				card1B.setScale(card1ScaleX, card1ScaleY);
 				window.draw(card1B);
+				window.draw(freestylesText);
 			}
 		}
 		else {
@@ -727,6 +771,7 @@ int modeChoosing(sf::RenderWindow& window) {
 			else {
 				card2B.setScale(card2ScaleX, card2ScaleY);
 				window.draw(card2B);
+				window.draw(standardText);
 			}
 		}
 		else {
@@ -761,6 +806,7 @@ int modeChoosing(sf::RenderWindow& window) {
 			else {
 				card3B.setScale(card3ScaleX, card3ScaleY);
 				window.draw(card3B);
+				window.draw(block2endsText);
 			}
 		}
 		else {
@@ -785,43 +831,43 @@ int loadGameScreen(sf::RenderWindow& window)
 {
 	// ============ LOAD TEXTURES ============
 	sf::Texture bgT, tableT, titleT;
-	bgT.loadFromFile("Assets/background_menu.png");
-	tableT.loadFromFile("Assets/load_table.png");
-	titleT.loadFromFile("Assets/load_title.png");
+	bgT.loadFromFile("Assets/background/background_menu.png");
+	tableT.loadFromFile("Assets/background/load_table.png");
+	titleT.loadFromFile("Assets/background/load_title.png");
 
 	sf::Sprite bg(bgT), table(tableT), title(titleT);
-	bg.setScale(4.26875f, 4.267f);
-	table.setScale(4.26875f, 4.267f);
-	title.setScale(4.26875f, 4.267f);
+	bg.setScale(scaleX, scaleY);
+	table.setScale(scaleX, scaleY);
+	title.setScale(scaleX, scaleY);
 
 	// ===== BLANKS =====
 	const int slotCount = 5;
 	sf::Texture blankT[slotCount];
 	sf::Sprite blankS[slotCount];
 	for (int i = 0; i < slotCount; ++i) {
-		std::string path = "Assets/blank" + std::to_string(i + 1) + ".png";
+		std::string path = "Assets/background/blank" + std::to_string(i + 1) + ".png";
 		blankT[i].loadFromFile(path);
 		blankS[i].setTexture(blankT[i]);
-		blankS[i].setScale(4.26875f, 4.267f);
+		blankS[i].setScale(scaleX, scaleY);
 	}
 
 	// ===== BUTTONS =====
 	sf::Texture tOnLoad, tOffLoad, tOnDelete, tOffDelete, tOnRename, tOffRename;
 	sf::Texture tOnExit, tOffExit;
-	tOnLoad.loadFromFile("Assets/on_load_button.png");
-	tOffLoad.loadFromFile("Assets/off_load_button.png");
-	tOnDelete.loadFromFile("Assets/on_delete_button.png");
-	tOffDelete.loadFromFile("Assets/off_delete_button.png");
-	tOnRename.loadFromFile("Assets/on_rename_button.png");
-	tOffRename.loadFromFile("Assets/off_rename_button.png");
-	tOnExit.loadFromFile("Assets/on_exit_load_button.png");
-	tOffExit.loadFromFile("Assets/off_exit_load_button.png");
+	tOnLoad.loadFromFile("Assets/button/on_load_button.png");
+	tOffLoad.loadFromFile("Assets/button/off_load_button.png");
+	tOnDelete.loadFromFile("Assets/button/on_delete_button.png");
+	tOffDelete.loadFromFile("Assets/button/off_delete_button.png");
+	tOnRename.loadFromFile("Assets/button/on_rename_button.png");
+	tOffRename.loadFromFile("Assets/button/off_rename_button.png");
+	tOnExit.loadFromFile("Assets/button/on_exit_load_button.png");
+	tOffExit.loadFromFile("Assets/button/off_exit_load_button.png");
 
 	sf::Sprite btnLoad(tOffLoad), btnDelete(tOffDelete), btnRename(tOffRename), btnExit(tOffExit);
-	btnLoad.setScale(4.26875f, 4.267f);
-	btnDelete.setScale(4.26875f, 4.267f);
-	btnRename.setScale(4.26875f, 4.267f);
-	btnExit.setScale(4.26875f, 4.267f);
+	btnLoad.setScale(scaleX, scaleY);
+	btnDelete.setScale(scaleX, scaleY);
+	btnRename.setScale(scaleX, scaleY);
+	btnExit.setScale(scaleX, scaleY);
 
 	// ===== STATE =====
 	int selectedSlot = 0;   // 0..4 = blank1..5, 5=Load,6=Rename,7=Delete,8=Exit
@@ -936,16 +982,16 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	sf::Texture boardT, xTexture, oTexture, bgTexture, barT;
 	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS;
 
-	boardT.loadFromFile("Assets/board.png");
-	xTexture.loadFromFile("Assets/X_letter.png");
-	oTexture.loadFromFile("Assets/O_letter.png");
-	barT.loadFromFile("Assets/text_board.png");
+	boardT.loadFromFile("Assets/playing/board.png");
+	xTexture.loadFromFile("Assets/playing/X_letter.png");
+	oTexture.loadFromFile("Assets/playing/O_letter.png");
+	barT.loadFromFile("Assets/background/text_board.png");
 
-	string bgPath = "Assets/board_background" + to_string(_backgroundForBoard) + ".png";
+	string bgPath = "Assets/background/board_background" + to_string(_backgroundForBoard) + ".png";
 	bgTexture.loadFromFile(bgPath);
 
 	bgSprite.setTexture(bgTexture);
-	bgSprite.setScale(3.8f, 3.5f); 
+	bgSprite.setScale(3.8f, 3.5f);
 
 	boardS.setTexture(boardT);
 	xSprite.setTexture(xTexture);
@@ -956,26 +1002,26 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	float boardScale = 3.5f;
 	boardS.setScale(boardScale, boardScale);
 
-	
-	float boardX = 15.0f;  
-	float boardY = 5.0f;  
+
+	float boardX = 15.0f;
+	float boardY = 5.0f;
 	boardS.setPosition(boardX, boardY);
-	
+
 	//Thanh thông báo
-	float barScale = 3.5f; 
+	float barScale = 3.5f;
 	barS.setScale(barScale, barScale);
-	float barX = 35.0f;  
-	float barY = 10.0f;  
+	float barX = 35.0f;
+	float barY = 10.0f;
 	barS.setPosition(barX, barY);
 
-	float originalCellSize = 12.04f;  
+	float originalCellSize = 12.04f;
 	float cellSize = originalCellSize * boardScale;
 
 	//Vị trí bắt đầu
-	float offsetX = 413.0f;  
-	float offsetY = 197.0f; 
+	float offsetX = 413.0f;
+	float offsetY = 197.0f;
 
-	float xoScale = 0.85f;  
+	float xoScale = 0.85f;
 	float xScale = (cellSize * xoScale) / xTexture.getSize().x;
 	float oScale = (cellSize * xoScale) / oTexture.getSize().x;
 
@@ -988,7 +1034,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		for (int j = 0; j < BOARD_SIZE; j++) {
 			if (_A[i][j].c != 0) {
-			
+
 				float pieceX = boardX + offsetX + (j * cellSize) + (cellSize / 2.0f);
 				float pieceY = boardY + offsetY + (i * cellSize) + (cellSize / 2.0f);
 
@@ -1009,7 +1055,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	// Set up cursor
 	sf::RectangleShape cursor(sf::Vector2f(cellSize - 4, cellSize - 4));
 	cursor.setFillColor(sf::Color::Transparent);
-	cursor.setOutlineColor(sf::Color(138,72,54));
+	cursor.setOutlineColor(sf::Color(138, 72, 54));
 	cursor.setOutlineThickness(3.0f);
 
 	float cursorX = boardX + offsetX + (_currentCol * cellSize) + 2;
@@ -1020,10 +1066,10 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	// Thông tin game
 	window.draw(barS);
 	sf::Font font;
-	if (font.loadFromFile("Assets/arial.ttf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+	if (font.loadFromFile("Assets/font/regular.ttf")) {
 		sf::Text gameInfo;
 		gameInfo.setFont(font);
-		gameInfo.setCharacterSize(24);
+		gameInfo.setCharacterSize(26);
 		gameInfo.setStyle(sf::Text::Bold);
 
 		std::string message;
@@ -1031,30 +1077,33 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		if (result == -1) {
 			message = "NGUOI CHOI X THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
+			gameInfo.setPosition(550.0f, 34.0f);
 		}
 		else if (result == 1) {
 			message = "NGUOI CHOI O THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
+			gameInfo.setPosition(550.0f, 34.0f);
 		}
 		else if (result == 0) {
 			message = "HOA!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
+			gameInfo.setPosition(650.0f, 34.0f);
 		}
 		else {
 			std::string playerText = _TURN ? "X" : "O";
 			message = "Luot choi: " + playerText;
-			gameInfo.setFillColor(sf::Color(54, 39, 32)); 
+			gameInfo.setFillColor(sf::Color(54, 39, 32));
+			gameInfo.setPosition(590.0f, 34.0f);
 		}
 
-		gameInfo.setString(message);           
-		gameInfo.setPosition(620.0f, 34.0f);
+		gameInfo.setString(message);
 		window.draw(gameInfo);
 	}
 }
 
 
 int ProcessFinish(int pWhoWin) {
-	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2); 
+	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
 	switch (pWhoWin) {
 	case -1:
 		printf("Nguoi choi %d da thang va nguoi choi %d da thua\n", true, false);
@@ -1066,14 +1115,14 @@ int ProcessFinish(int pWhoWin) {
 		printf("Nguoi choi %d da hoa nguoi choi %d\n", false, true);
 		break;
 	case 2:
-		_TURN = !_TURN; 
+		_TURN = !_TURN;
 	}
-	GotoXY(_X, _Y); 
+	GotoXY(_X, _Y);
 	return pWhoWin;
-	
+
 }
 
-int AskContinue(){
+int AskContinue() {
 	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4);
 	printf("Nhan 'y/n' de tiep tuc/dung: ");
 	return toupper(_getch());
