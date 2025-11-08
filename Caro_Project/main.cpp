@@ -8,6 +8,7 @@
 using namespace std;
 
 GameRule rule = GameRule::FREESTYLE;
+GameRule _rule = GameRule::FREESTYLE;
 
 int main() {
     FixConsoleWindow();
@@ -108,16 +109,72 @@ int main() {
         }
         case 3:
         {
-            // Mở cửa sổ Setting bằng SFML
-            sf::RenderWindow settingsWindow(sf::VideoMode(1366, 768), "Settings", sf::Style::Close);
-            sf::Font font;
-            if (!font.loadFromFile("Assets/font/regular.ttf")) {
-                cerr << "Khong the tai font!\n";
+            int slot = loadGameScreen(window);
+            if (slot == 0) break; // 0 = thoát hoặc quay lại menu chính
+
+            window.close();
+            std::cout << u8"Đang tải slot " << slot << "...\n";
+
+            // ======= LOAD GAME =======
+            if (!LoadFromFile(slot)) {
+                std::cout << u8"Không thể tải file slot " << slot << ". Bắt đầu game mới.\n";
+                StartGame();
             }
-            handleSettings(window, font);
+
+            bool validEnter = true;
+            _rule = rule;
+
+            while (true)
+            {
+                _COMMAND = toupper(_getch());
+                if (_COMMAND == 27) // ESC để thoát
+                {
+                    ExitGame();
+                    return 0;
+                }
+                else {
+                    if (_COMMAND == 'A') MoveLeft();
+                    else if (_COMMAND == 'W') MoveUp();
+                    else if (_COMMAND == 'S') MoveDown();
+                    else if (_COMMAND == 'D') MoveRight();
+                    else if (_COMMAND == 13) // ENTER
+                    {
+                        switch (CheckBoard(_X, _Y)) {
+                        case -1: cout << "X"; break;
+                        case 1:  cout << "O"; break;
+                        case 0:  validEnter = false;
+                        }
+                        if (validEnter == true) {
+                            int result = 2;
+                            switch (_rule)
+                            {
+                            case GameRule::FREESTYLE:
+                                result = TestBoard_Freestyle(); break;
+                            case GameRule::STANDARD:
+                                result = TestBoard_Standard(); break;
+                            case GameRule::BLOCKED_TWO_ENDS:
+                                result = TestBoard_BlockedTwoEnds(); break;
+                            }
+
+                            switch (ProcessFinish(result)) {
+                            case -1: case 1: case 0:
+                                if (AskContinue() != 'Y') {
+                                    ExitGame();
+                                    return 0;
+                                }
+                                else {
+                                    StartGame();
+                                }
+                            }
+                        }
+                        validEnter = true;
+                    }
+                }
+            }
+
             break;
-            
         }
+            
         case 4: // Thoát
             ExitGame();
             window.close();

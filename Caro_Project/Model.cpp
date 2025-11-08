@@ -1,5 +1,4 @@
 #include "Model.h"
-#include "Globals.h"
 
 // ====================== RESET BÀN CỜ ======================
 
@@ -231,3 +230,88 @@ int TestBoard(GameRule rule) {
         return 2;  // Continue game
     }
 }
+
+// ====================== SAVE GAME ======================
+
+void SaveGame(const string& filename, GameRule rule, int result)
+{
+    ofstream fout(filename);
+    if (!fout.is_open()) {
+        cout << "Không thể mở file để lưu!\n";
+        return;
+    }
+
+    time_t now = time(nullptr);
+    tm* ltm = localtime(&now);
+
+    fout << "Thời gian lưu: " << put_time(ltm, "%H:%M:%S %d/%m/%Y") << "\n";
+    fout << (int)rule << "\n";
+    fout << _TURN << "\n";
+    fout << result << "\n";
+
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            if (_A[i][j].c == -1) fout << 'X';
+            else if (_A[i][j].c == 1) fout << 'O';
+            else fout << '.';
+        }
+        fout << "\n";
+    }
+
+    fout.close();
+    cout << "Đã lưu game vào: " << filename << "\n";
+}
+
+// ====================== LOAD GAME ======================
+
+bool LoadFromFile(int slot)
+{
+    string folder = "Saves";
+
+#ifdef _WIN32
+    _mkdir(folder.c_str());
+#else
+    mkdir(folder.c_str(), 0755);
+#endif
+
+    string filename = folder + "/save_slot_" + to_string(slot) + ".sav";
+    ifstream fin(filename);
+    if (!fin.is_open())
+    {
+        cerr << "Không tìm thấy file lưu: " << filename << "\n";
+        return false;
+    }
+
+    string header;
+    getline(fin, header);
+
+    int ruleInt = 0;
+    int result = 2;
+    fin >> ruleInt >> _TURN >> result;
+    fin.ignore();
+
+    GameRule rule = static_cast<GameRule>(ruleInt);
+
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        string line;
+        getline(fin, line);
+        for (int j = 0; j < BOARD_SIZE && j < (int)line.size(); j++)
+        {
+            if (line[j] == 'X') _A[i][j].c = -1;
+            else if (line[j] == 'O') _A[i][j].c = 1;
+            else _A[i][j].c = 0;
+        }
+    }
+
+    fin.close();
+
+    _rule = rule;
+    _COMMAND = -1;
+
+    cout << "Đã load game từ slot " << slot << " (" << filename << ")\n";
+    return true;
+}
+
