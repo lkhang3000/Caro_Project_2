@@ -329,7 +329,7 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 	std::wstring infoString =
 		L"Trường Đại học Khoa học Tự nhiên - ĐHQGHCM\n"
 		L"		ĐỒ ÁN GAME CARO - 25C10\n\n"
-		L"		  Giáo viên hướng dẫn: \n"
+		L"		  Giảng viên hướng dẫn: \n"
 		L"	   < ThS.Trương Toàn Thịnh >\n\n"
 		L"	    Game được thực hiện bởi:\n"
 		L"     24127132 - Nguyễn Thị Ngọc Trâm\n"
