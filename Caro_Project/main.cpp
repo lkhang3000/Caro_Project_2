@@ -170,7 +170,7 @@ int main() {
 
             break;
         }
-            
+
         case 4: // Thoát
             ExitGame();
             window.close();
@@ -178,7 +178,7 @@ int main() {
         default:
             continue;
         }
-        
+
     }
     return 0;
 }

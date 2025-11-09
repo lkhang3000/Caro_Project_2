@@ -102,12 +102,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+<<<<<<< HEAD
+      <AdditionalIncludeDirectories>C:\Users\NGOC TRAM\Downloads\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+=======
       <AdditionalIncludeDirectories>$(SolutionDir)SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+>>>>>>> master
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+<<<<<<< HEAD
+      <AdditionalLibraryDirectories>C:\Users\NGOC TRAM\Downloads\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\lib;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
+=======
       <AdditionalLibraryDirectories>$(SolutionDir)SFML-2.6.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+>>>>>>> master
       <AdditionalDependencies>sfml-graphics-d.lib;
 sfml-window-d.lib;
 sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
