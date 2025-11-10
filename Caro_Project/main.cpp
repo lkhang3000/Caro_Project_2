@@ -26,15 +26,15 @@ int main() {
             switch (choice) {
             case 2:
                 rule = GameRule::FREESTYLE;
-                _backgroundForBoard = 1;
+                _backgroundBoard = 1;
                 break;
             case 3:
                 rule = GameRule::STANDARD;
-                _backgroundForBoard = 2;
+                _backgroundBoard = 2;
                 break;
             case 4:
                 rule = GameRule::BLOCKED_TWO_ENDS;
-                _backgroundForBoard = 3;
+                _backgroundBoard = 3;
                 break;
             default: continue;
             }
