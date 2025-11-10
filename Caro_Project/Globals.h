@@ -13,6 +13,6 @@ extern int _COMMAND;
 extern int _X, _Y;
 extern int _currentRow;  
 extern int _currentCol;
-extern int _backgroundForBoard;
+extern int _backgroundBoard;
 
 #endif
