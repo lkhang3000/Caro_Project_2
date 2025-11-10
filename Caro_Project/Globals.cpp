@@ -9,5 +9,5 @@ int _Y = 0;
 
 int _currentRow = 0;
 int _currentCol = 0;
-int _backgroundForBoard = 1;
+int _backgroundBoard = 1;
 

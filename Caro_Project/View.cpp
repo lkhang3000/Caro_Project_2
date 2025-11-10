@@ -560,13 +560,13 @@ int modeChoosing(sf::RenderWindow& window) {
 	card3U.setPosition(card3CenterX, card3CenterY);
 
 	// OK Button
-	float okButtonScale = 3.68f;
+	float okButtonScale = 4.32222f;
 	okButtonS.setScale(okButtonScale, okButtonScale);
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
 	// Tính toán vị trí giữa màn hình
 	float okButtonX = 790.0f;
-	float okButtonY = 580.0f;
+	float okButtonY = 700.0f;
 
 	int cardChoice = 1;
 	int row = 0; // 0 = cards, 1 = OK button
@@ -979,21 +979,37 @@ void GotoXY(int x, int y) {
 }
 
 void DrawBoard(sf::RenderWindow& window, int n, int result) {
-	sf::Texture boardT, xTexture, oTexture, bgTexture, barT;
+	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T;
 	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS;
 
-	boardT.loadFromFile("Assets/playing/board.png");
+	board1T.loadFromFile("Assets/playing/board.png");
+	board3T.loadFromFile("Assets/playing/board_renju.png");
+	board2T.loadFromFile("Assets/playing/board_standard.png");
 	xTexture.loadFromFile("Assets/playing/X_letter.png");
 	oTexture.loadFromFile("Assets/playing/O_letter.png");
 	barT.loadFromFile("Assets/background/text_board.png");
 
-	string bgPath = "Assets/background/board_background" + to_string(_backgroundForBoard) + ".png";
+	string bgPath = "Assets/background/board_background" + to_string(_backgroundBoard) + ".png";
 	bgTexture.loadFromFile(bgPath);
 
 	bgSprite.setTexture(bgTexture);
 	bgSprite.setScale(3.8f, 3.5f);
 
-	boardS.setTexture(boardT);
+	switch (_backgroundBoard) {
+	case 1:
+		boardS.setTexture(board1T);
+		break;
+	case 2:
+		boardS.setTexture(board2T);
+		break;
+	case 3:
+		boardS.setTexture(board3T);
+		break;
+	default:
+		boardS.setTexture(board1T); 
+		break;
+	}
+
 	xSprite.setTexture(xTexture);
 	oSprite.setTexture(oTexture);
 	barS.setTexture(barT);
