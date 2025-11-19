@@ -16,6 +16,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(1366, 768), "Caro", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
+main_menu:
     while (window.isOpen()) {
         int menuChoice = mainScreen(window);
 
@@ -40,12 +41,56 @@ int main() {
             }
             break;
         }
-        case 2: // Mới
+        case 2: // Mới / Tiếp tục Game (SFML Loop)
         {
-            // ======= BẮT ĐẦU GAME =======
-            StartGame();
-            int result = 2;
+            // === 1. Tải Font và Assets cho Game Play ===
+            sf::Font font;
+            if (!font.loadFromFile("Assets/font/regular.ttf")) {
+                std::cerr << "Không thể tải font!\n";
+            }
 
+            // Tải Texture cho nút Setting và Pause/Play
+            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT;
+            // Đảm bảo bạn có các file này trong Assets/button/
+            if (!settingOffT.loadFromFile("Assets/button/setting2_button_off.png")) { /* handle error */ }
+            if (!settingOnT.loadFromFile("Assets/button/setting2_button_on.png")) { /* handle error */ }
+            if (!pauseOffT.loadFromFile("Assets/button/pause_button_off.png")) { /* handle error */ }
+            if (!pauseOnT.loadFromFile("Assets/button/pause_button_on.png")) { /* handle error */ }
+            if (!playOnT.loadFromFile("Assets/button/play_button_on.png")) { /* handle error */ }
+
+            sf::Sprite settingButton(settingOffT);
+            sf::Sprite pauseButton(pauseOffT);
+
+            // Vị trí và Scale nút
+            float buttonScale = 4.26875f - 1.5;
+            float margin = 4.267f - 1.5;
+            float btnWidth = settingOffT.getSize().x * buttonScale;
+
+            // Tính toán vị trí các nút ở góc phải trên
+            // Setting ở ngoài cùng bên phải
+            float settingX = 1366.f - margin - btnWidth;
+            // Pause ở bên trái Setting
+            float pauseX = settingX;
+            float settingY = margin;
+            float pauseY = margin;
+            settingButton.setPosition(settingX, settingY);
+            pauseButton.setPosition(pauseX, pauseY);
+
+            settingButton.setScale(buttonScale, buttonScale);
+            pauseButton.setScale(buttonScale, buttonScale);
+            settingButton.setPosition(settingX, settingY);
+            pauseButton.setPosition(pauseX, pauseY);
+
+            // === 2. Khởi tạo Trạng thái Game ===
+            StartGame();
+            int result = 2; // 2: Đang chơi, -1: X thắng, 1: O thắng, 0: Hòa
+
+            // enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED }; (Nên khai báo trong Globals.h)
+            enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED }; // Khai báo tạm nếu chưa có
+            GameState gameState = BOARD_ACTIVE;
+            bool isPaused = false;
+
+            // === 3. Vòng lặp Game Play ===
             while (window.isOpen()) {
                 sf::Event event;
                 while (window.pollEvent(event)) {
@@ -53,54 +98,123 @@ int main() {
                         window.close();
                         return 0;
                     }
-
                     if (event.type == sf::Event::KeyPressed) {
+
+                        // 1. Xử lý khi Game đã kết thúc (result != 2)
                         if (result != 2) {
                             if (event.key.code == sf::Keyboard::Enter) {
+                                StartGame();
                                 goto main_menu;
                             }
                             continue;
                         }
+
+                        // 2. Ngăn chặn input khi đang trong Menu Pause
+                        if (isPaused) {
+                            continue;
+                        }
+
+                        // 3. Xử lý Input chính khi Game Active/Focus nút
                         switch (event.key.code) {
                         case sf::Keyboard::A:
-                            MoveLeft();
-                            break;
-                        case sf::Keyboard::W:
-                            MoveUp();
-                            break;
-                        case sf::Keyboard::S:
-                            MoveDown();
+                            if (gameState == BOARD_ACTIVE) MoveLeft();
+                            else if (gameState == PAUSE_FOCUSED) gameState = BOARD_ACTIVE; // Từ Pause về Board (hoặc vòng)
+                            else if (gameState == SETTING_FOCUSED) gameState = PAUSE_FOCUSED; // Từ Setting về Pause
                             break;
                         case sf::Keyboard::D:
-                            MoveRight();
+                            if (gameState == BOARD_ACTIVE) MoveRight();
+                            else if (gameState == PAUSE_FOCUSED) gameState = SETTING_FOCUSED; // Từ Pause về Setting
+                            else if (gameState == SETTING_FOCUSED) gameState = BOARD_ACTIVE; // Từ Setting về Board (hoặc vòng)
+                            break;
+                        case sf::Keyboard::W:
+                            // LOGIC MỚI: Chỉ cần MoveUp một lần từ hàng 0 sẽ chuyển focus
+                            if (gameState == BOARD_ACTIVE) {
+                                if (_currentRow == 0) { // Kiểm tra nếu đang ở hàng đầu tiên
+                                    gameState = PAUSE_FOCUSED; // Chuyển focus sang nút Pause trước
+                                }
+                                else {
+                                    MoveUp();
+                                }
+                            }
+                            else {
+                                // Khi đang focus nút, W đưa về focus bàn cờ
+                                gameState = BOARD_ACTIVE;
+                            }
+                            break;
+                        case sf::Keyboard::S:
+                            if (gameState == BOARD_ACTIVE) {
+                                MoveDown();
+                            }
+                            else {
+                                // Khi đang focus nút, S đưa về focus bàn cờ
+                                gameState = BOARD_ACTIVE;
+                            }
                             break;
                         case sf::Keyboard::Enter:
                         {
-                            if (PlacePiece()) {
-                                result = TestBoard(rule);
-
-                                if (result != 2) {
-
+                            if (gameState == BOARD_ACTIVE) {
+                                if (PlacePiece()) {
+                                    result = TestBoard(rule);
+                                    _TURN = !_TURN;
+                                    if (result != 2) { /* Game over logic */ }
                                 }
+                            }
+                            else if (gameState == SETTING_FOCUSED) {
+                                handleSettings(window, font);
+                                gameState = BOARD_ACTIVE; // Quay lại bàn cờ sau khi thoát Settings
+                            }
+                            else if (gameState == PAUSE_FOCUSED) {
+                                isPaused = true;
 
-                                _TURN = !_TURN;
+                                int pauseResult = handlePauseMenu(window, font);
+
+                                isPaused = false;
+                                gameState = BOARD_ACTIVE; // Luôn quay lại bàn cờ sau khi thoát menu
+
+                                if (pauseResult == 1) { /* Tiếp tục */ }
+                                else if (pauseResult == 2) {
+                                    StartGame();
+                                    result = 2;
+                                }
+                                else if (pauseResult == 3) { /* Lưu game */ }
+                                else if (pauseResult == 4) {
+                                    goto main_menu;
+                                }
                             }
                             break;
                         }
                         case sf::Keyboard::Escape:
-                            goto main_menu;
+                            goto main_menu; // ESC thoát về Main Menu
                         default:
                             break;
                         }
                     }
                 }
 
-                // Render game
+                // === 4. Render Game ===
                 window.clear();
                 DrawBoard(window, BOARD_SIZE, result);
+
+                // Cập nhật trạng thái và vẽ nút
+                settingButton.setTexture(settingOffT);
+                pauseButton.setTexture(pauseOffT);
+
+                // Khi focus Setting
+                if (gameState == SETTING_FOCUSED) {
+                    settingButton.setTexture(settingOnT);
+                    pauseButton.setTexture(pauseOffT);
+                }
+                // Khi focus Pause
+                else if (gameState == PAUSE_FOCUSED) {
+                    pauseButton.setTexture(pauseOnT);
+                    settingButton.setTexture(settingOffT);
+                }
+
+                window.draw(settingButton);
+                window.draw(pauseButton);
                 window.display();
             }
-        main_menu:
+
             break;
         }
         case 3:

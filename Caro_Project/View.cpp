@@ -1128,3 +1128,99 @@ int AskContinue() {
 	return toupper(_getch());
 
 }
+
+// Hàm xử lý Menu Tạm dừng
+int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
+	// 1. LƯU View hiện tại của game (để khôi phục sau)
+	sf::View gameView = window.getView();
+
+	// 2. ĐẶT View MẶC ĐỊNH (defaultView) cho UI
+	sf::View defaultView = window.getDefaultView();
+	window.setView(defaultView);
+
+	// Lấy kích thước cửa sổ (kích thước View mặc định)
+	sf::Vector2u winSize = window.getSize();
+
+	// 3. TẠO LỚP LÀM MỜ ĐỒNG NHẤT (UNIVERSAL DIMMING LAYER)
+	// Lớp này vừa khít với cửa sổ và làm mờ/tối cảnh game bên dưới
+	sf::RectangleShape dimmingOverlay(sf::Vector2f(static_cast<float>(winSize.x), static_cast<float>(winSize.y)));
+
+	// Đặt màu đen và độ trong suốt (Alpha = 150/255)
+	dimmingOverlay.setFillColor(sf::Color(50, 50, 50, 40));
+
+
+	// 4. Tải Background chính (dùng để tính toán scale và dự phòng)
+	sf::Texture backgroundT;
+	if (!backgroundT.loadFromFile("Assets/background/pause_menu.png")) {
+		// Xử lý lỗi tải file
+	}
+
+	// Tính toán scale để Sprite phủ kín toàn bộ cửa sổ
+	float scaleX_FullScreen = static_cast<float>(winSize.x) / backgroundT.getSize().x;
+	float scaleY_FullScreen = static_cast<float>(winSize.y) / backgroundT.getSize().y;
+
+	// 5. Tải các background phụ cho từng lựa chọn
+	sf::Texture tCont, tReset, tSave, tMain;
+	if (!tCont.loadFromFile("Assets/background/pause_continue.png")) tCont = backgroundT;
+	if (!tReset.loadFromFile("Assets/background/pause_reset.png")) tReset = backgroundT;
+	if (!tSave.loadFromFile("Assets/background/pause_save.png")) tSave = backgroundT;
+	if (!tMain.loadFromFile("Assets/background/pause_exit.png")) tMain = backgroundT;
+
+	std::vector<sf::Texture> chosenBGTs = { tCont, tReset, tSave, tMain };
+	sf::Sprite fullScreenMenu(chosenBGTs[0]);
+
+	// Áp dụng scale toàn màn hình
+	fullScreenMenu.setScale(scaleX_FullScreen, scaleY_FullScreen);
+
+	// Đặt vị trí bắt đầu từ góc trên bên trái
+	fullScreenMenu.setOrigin(0.f, 0.f);
+	fullScreenMenu.setPosition(0.f, 0.f);
+
+	// ĐIỀU CHỈNH QUAN TRỌNG: BUỘC MENU CÓ ĐỘ TRONG SUỐT
+	// Điều này đảm bảo menu Pixel Art của bạn mờ đi một chút, cho phép thấy cảnh game.
+	fullScreenMenu.setColor(sf::Color(255, 255, 255, 255));
+
+
+	// 6. Vòng lặp điều khiển
+	int selectedItem = 0;
+	const int optionCount = chosenBGTs.size();
+
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W) {
+					selectedItem = (selectedItem + optionCount - 1) % optionCount;
+				}
+				else if (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S) {
+					selectedItem = (selectedItem + 1) % optionCount;
+				}
+				else if (event.key.code == sf::Keyboard::Enter) {
+					// PHỤC HỒI View của game trước khi thoát
+					window.setView(gameView);
+					return selectedItem + 1;
+				}
+				else if (event.key.code == sf::Keyboard::Escape) {
+					// PHỤC HỒI View của game trước khi thoát
+					window.setView(gameView);
+					return 1; // ESC để tiếp tục
+				}
+			}
+		}
+
+		// DRAW: 
+
+		// 1. Vẽ Lớp Làm Mờ (Dimming Layer) lên trên cảnh game (làm tối)
+		window.draw(dimmingOverlay);
+
+		// 2. Vẽ Menu Toàn Màn hình (Pixel Art) lên trên lớp làm mờ (buộc thấy xuyên qua)
+		fullScreenMenu.setTexture(chosenBGTs[selectedItem]);
+		window.draw(fullScreenMenu);
+
+		window.display();
+	}
+
+	// Thoát bất thường -> Phục hồi View
+	window.setView(gameView);
+	return 0;
+}
