@@ -1398,3 +1398,88 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 	window.setView(gameView);
 	return 0;
 }
+
+int opponentChoosing(sf::RenderWindow& window) {
+	sf::Font font;
+	if (!font.loadFromFile("Assets/font/regular.ttf")) {
+		std::cerr << "Khong tai duoc font!\n";
+	}
+
+	sf::Texture backgroundT;
+	if (!backgroundT.loadFromFile("Assets/background/background_menu.png")) {
+	}
+	sf::Sprite bg(backgroundT);
+	bg.setScale(4.26875f, 4.267f); 
+
+
+	sf::Text titleText, pvpText, pveText;
+
+
+	titleText.setFont(font);
+	titleText.setString("CHON CHE DO CHOI");
+	titleText.setCharacterSize(50);
+	titleText.setFillColor(sf::Color(80, 48, 32)); 
+	titleText.setStyle(sf::Text::Bold);
+
+	titleText.setPosition(480.f, 200.f);
+
+	// Setup lựa chọn 1: PvP
+	pvpText.setFont(font);
+	pvpText.setString("NGUOI DAU NGUOI (PvP)");
+	pvpText.setCharacterSize(40);
+	pvpText.setPosition(450.f, 350.f);
+
+	// Setup lựa chọn 2: PvE
+	pveText.setFont(font);
+	pveText.setString("NGUOI DAU MAY (PvE)");
+	pveText.setCharacterSize(40);
+	pveText.setPosition(450.f, 450.f);
+
+	int choice = 0; // 0: PvP, 1: PvE
+
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
+				window.close();
+				return -1;
+			}
+			if (event.type == sf::Event::KeyPressed) {
+				
+				if (event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) {
+					choice = 0;
+				}
+				else if (event.key.code == sf::Keyboard::S || event.key.code == sf::Keyboard::Down) {
+					choice = 1;
+				}
+				
+				else if (event.key.code == sf::Keyboard::Enter) {
+					return choice;
+				}
+				
+				else if (event.key.code == sf::Keyboard::Escape) {
+					return -1;
+				}
+			}
+		}
+
+		
+		if (choice == 0) {
+			pvpText.setFillColor(sf::Color::Red);       
+			pveText.setFillColor(sf::Color(80, 48, 32));
+		}
+		else {
+			pvpText.setFillColor(sf::Color(80, 48, 32));
+			pveText.setFillColor(sf::Color::Red);
+		}
+
+		
+		window.clear();
+		window.draw(bg);
+		window.draw(titleText);
+		window.draw(pvpText);
+		window.draw(pveText);
+		window.display();
+	}
+	return -1;
+}
