@@ -14,6 +14,7 @@ extern int _X, _Y;
 extern int _currentRow;  
 extern int _currentCol;
 extern int _backgroundBoard;
+extern bool _isPvE;
 
 extern int _winsX;  
 extern int _winsO;  
