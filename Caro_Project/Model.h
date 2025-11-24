@@ -59,6 +59,8 @@ int TestBoard(GameRule rule);
 // ====================== LƯU & TẢI GAME ======================
 bool LoadFromFile(int slot);
 void SaveGame(const std::string& filename, GameRule rule, int result);
+// =============================PvE========================================
+_POINT GetBotMove();
 
 extern GameRule _rule;
 
