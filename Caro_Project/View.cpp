@@ -499,7 +499,8 @@ int modeChoosing(sf::RenderWindow& window) {
 	bg.setScale(scaleX, scaleY);
 
 	//Tải ảnh từ folder
-	sf::Texture card1Front, card1Back, card1BG, card2Front, card2Back, card2BG, card3Front, card3Back, card3BG, okButton, okButtonDark;
+	sf::Texture card1Front, card1Back, card1BG, card2Front, card2Back, card2BG, card3Front, card3Back, card3BG, 
+				okButton, okButtonDark, backButton, backButtonDark, settingButton, settingButtonDark;
 	card1Front.loadFromFile("Assets/playing/card1.png");
 	card1Back.loadFromFile("Assets/playing/card1_back.png");
 	card1BG.loadFromFile("Assets/playing/card1_unchosen.png");
@@ -509,11 +510,16 @@ int modeChoosing(sf::RenderWindow& window) {
 	card3Front.loadFromFile("Assets/playing/card3.png");
 	card3Back.loadFromFile("Assets/playing/card3_back.png");
 	card3BG.loadFromFile("Assets/playing/card3_unchosen.png");
+
 	okButton.loadFromFile("Assets/button/ok_button.png");
 	okButtonDark.loadFromFile("Assets/button/ok_buttonDark.png");
+	backButton.loadFromFile("Assets/button/pause_button_on.png");
+	backButtonDark.loadFromFile("Assets/button/pause_button_off.png");
+	settingButton.loadFromFile("Assets/button/setting2_button_on.png");
+	settingButtonDark.loadFromFile("Assets/button/setting2_button_off.png");
 
-	double baseScale = 3.1999f;
-	double selectedScale = 3.1999f;
+	double baseScale = 3.0599f;
+	double selectedScale = 3.0599f;
 
 	sf::Sprite card1F(card1Front);
 	sf::Sprite card1B(card1Back);
@@ -524,15 +530,21 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite card3F(card3Front);
 	sf::Sprite card3B(card3Back);
 	sf::Sprite card3U(card3BG);
+
 	sf::Sprite okButtonS(okButton);
 	sf::Sprite okButton_Dark(okButtonDark);
+	sf::Sprite backButtonS(backButton);
+	sf::Sprite backButton_Dark(backButtonDark);
+	sf::Sprite settingS(settingButton);
+	sf::Sprite setting_Dark(settingButtonDark);
+
 
 	float card1CenterX = 270.0f;
-	float card1CenterY = 350.0f;
+	float card1CenterY = 380.0f;
 	float card2CenterX = 660.0f;
-	float card2CenterY = 350.0f;
+	float card2CenterY = 380.0f;
 	float card3CenterX = 1100.0f;
-	float card3CenterY = 350.0f;
+	float card3CenterY = 380.0f;
 
 	//Set origin và position
 	//Card 1
@@ -564,12 +576,26 @@ int modeChoosing(sf::RenderWindow& window) {
 	okButtonS.setScale(okButtonScale, okButtonScale);
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
+	// Back button
+	backButtonS.setScale(scaleX - 1.5f, scaleY - 1.5f);
+	backButton_Dark.setScale(scaleX - 1.5f, scaleY - 1.5f);
+	backButtonS.setPosition(- 830.0f, 10.0f);
+	backButton_Dark.setPosition(- 830.0f, 10.0f);
+
+	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	setting_Dark.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingS.setPosition(200.0f, 15.0f);
+	setting_Dark.setPosition(200.0f, 15.0f);
+
 	// Tính toán vị trí giữa màn hình
 	float okButtonX = 790.0f;
 	float okButtonY = 700.0f;
 
+	// --- [QUAN TRỌNG] LOGIC ĐIỀU HƯỚNG ---
 	int cardChoice = 1;
-	int row = 0; // 0 = cards, 1 = OK button
+	int row = 1; // 0 = Back Button, 1 = cards, 2 = OK button
+	int topChoice = 0; // 0 = Back, 1 = Setting 
+
 	bool isCard1Flipped = true;
 	bool isCard2Flipped = true;
 	bool isCard3Flipped = true;
@@ -591,7 +617,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	freestylesText.setString(freestyleString);
 	freestylesText.setCharacterSize(27);
 	freestylesText.setFillColor(sf::Color(80, 48, 32));
-	freestylesText.setPosition(120.f, 330.f);
+	freestylesText.setPosition(120.f, 380.f);
 
 	// Card 2: Tiêu chuẩn
 	sf::Text standardText;
@@ -606,13 +632,13 @@ int modeChoosing(sf::RenderWindow& window) {
 	standardText.setString(standardString);
 	standardText.setCharacterSize(27);
 	standardText.setFillColor(sf::Color(80, 48, 32));
-	standardText.setPosition(527.f, 330.f);
+	standardText.setPosition(527.f, 380.f);
 
 	// Card 3: Chặn 2 đầu
 	sf::Text block2endsText;
 	block2endsText.setFont(font);
 	std::wstring blockString =
-		L"	LUẬT CHẶN 2 ĐẦU\n\n"
+		L"   LUẬT CHẶN 2 ĐẦU\n\n"
 		L"Bên nào tạo được hàng\n"
 		L"liên tiếp nhiều hơn 5\n"
 		L"hoặc không bị chặn 2\n"
@@ -622,7 +648,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	block2endsText.setString(blockString);
 	block2endsText.setCharacterSize(27);
 	block2endsText.setFillColor(sf::Color(80, 48, 32));
-	block2endsText.setPosition(963.f, 330.f);
+	block2endsText.setPosition(965.f, 377.f);
 
 	sf::Clock clock;
 
@@ -639,41 +665,66 @@ int modeChoosing(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::A:
-					if (row == 0) {
+					if (row == 1) {
 						cardChoice--;
 						if (cardChoice < 1) cardChoice = 3;
+					}
+					else if (row == 0) {
+						// Điều hướng hàng trên: A chuyển về nút Back (0)
+						topChoice = 0;
 					}
 					break;
 
 				case sf::Keyboard::D:
-					if (row == 0) {
+					if (row == 1) {
 						cardChoice++;
 						if (cardChoice > 3) cardChoice = 1;
+					}
+					else if (row == 0) {
+						// Điều hướng hàng trên: D chuyển sang nút Setting (1)
+						topChoice = 1;
 					}
 					break;
 
 				case sf::Keyboard::W:
-					if (row == 1) {
+					if (row == 2) { // Từ OK lên Card
+						row = 1;
+					}
+					else if (row == 1) { // Từ Card lên Back
 						row = 0;
+						topChoice = 0;
 					}
 					break;
 
 				case sf::Keyboard::S:
-					if (row == 0) {
+					if (row == 0) { // Từ Back xuống Card
 						row = 1;
+					}
+					else if (row == 1) { // Từ Card xuống OK
+						row = 2;
 					}
 					break;
 
 				case sf::Keyboard::Enter:
 					if (row == 0) {
+						if (topChoice == 0) {
+							// Chọn Back -> Về menu chính
+							return 0;
+						}
+						else if (topChoice == 1) {
+							// Chọn Setting -> Gọi hàm handleSettings
+							handleSettings(window, font);
+						}
+					}
+					else if (row == 1) {
 						if (!isFlipping) {
 							isFlipping = true;
 							flipProcess = 0.0f;
 							flippingCard = cardChoice;
 						}
 					}
-					else {
-						return cardChoice + 1;
+					else if (row == 2) {
+						return cardChoice + 1; // Vào game
 					}
 					break;
 
@@ -815,12 +866,29 @@ int modeChoosing(sf::RenderWindow& window) {
 		}
 
 		// Draw OK button
-		if (row == 1) {
+		if (row == 2) {
 			window.draw(okButtonS);
 		}
 		else {
 			window.draw(okButton_Dark);
 		}
+
+		// Draw Back button
+		if (row == 0 && topChoice == 0) {
+			window.draw(backButtonS);
+		}
+		else {
+			window.draw(backButton_Dark);
+		}
+
+		// Draw Setting button
+		if (row == 0 && topChoice == 1) {
+			window.draw(settingS);
+		}
+		else {
+			window.draw(setting_Dark);
+		}
+
 		window.display();
 	}
 

@@ -50,16 +50,19 @@ main_menu:
             }
 
             // Tải Texture cho nút Setting và Pause/Play
-            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT;
+            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT, backOnT, backOffT;
             // Đảm bảo bạn có các file này trong Assets/button/
             if (!settingOffT.loadFromFile("Assets/button/setting2_button_off.png")) { /* handle error */ }
             if (!settingOnT.loadFromFile("Assets/button/setting2_button_on.png")) { /* handle error */ }
             if (!pauseOffT.loadFromFile("Assets/button/pause_button_off.png")) { /* handle error */ }
             if (!pauseOnT.loadFromFile("Assets/button/pause_button_on.png")) { /* handle error */ }
             if (!playOnT.loadFromFile("Assets/button/play_button_on.png")) { /* handle error */ }
+			if (!backOnT.loadFromFile("Assets/button/exit.png")) { /* handle error */ }
+			if (!backOffT.loadFromFile("Assets/button/exit_dark.png")) { /* handle error */ }
 
             sf::Sprite settingButton(settingOffT);
             sf::Sprite pauseButton(pauseOffT);
+            sf::Sprite backButton(backOffT);
 
             // Vị trí và Scale nút
             float buttonScale = 4.26875f - 1.5;
@@ -78,15 +81,17 @@ main_menu:
 
             settingButton.setScale(buttonScale, buttonScale);
             pauseButton.setScale(buttonScale, buttonScale);
+			backButton.setScale(buttonScale, buttonScale);
             settingButton.setPosition(settingX, settingY);
             pauseButton.setPosition(pauseX, pauseY);
+			backButton.setPosition(10.f, 10.f);
 
             // === 2. Khởi tạo Trạng thái Game ===
             StartGame();
             int result = 2; // 2: Đang chơi, -1: X thắng, 1: O thắng, 0: Hòa
 
-            // enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED }; (Nên khai báo trong Globals.h)
-            enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED }; // Khai báo tạm nếu chưa có
+            // enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED, BACK_FOCUSED }; (Nên khai báo trong Globals.h)
+            enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED, BACK_FOCUSED }; // Khai báo tạm nếu chưa có
             GameState gameState = BOARD_ACTIVE;
             bool isPaused = false;
 
@@ -120,17 +125,21 @@ main_menu:
                             if (gameState == BOARD_ACTIVE) MoveLeft();
                             else if (gameState == PAUSE_FOCUSED) gameState = BOARD_ACTIVE; // Từ Pause về Board (hoặc vòng)
                             else if (gameState == SETTING_FOCUSED) gameState = PAUSE_FOCUSED; // Từ Setting về Pause
+                            else if (gameState == PAUSE_FOCUSED) gameState = BACK_FOCUSED;
                             break;
                         case sf::Keyboard::D:
                             if (gameState == BOARD_ACTIVE) MoveRight();
-                            else if (gameState == PAUSE_FOCUSED) gameState = SETTING_FOCUSED; // Từ Pause về Setting
-                            else if (gameState == SETTING_FOCUSED) gameState = BOARD_ACTIVE; // Từ Setting về Board (hoặc vòng)
+                            else if (gameState == BACK_FOCUSED) gameState = PAUSE_FOCUSED; // Back sang phải là Pause
+                            else if (gameState == PAUSE_FOCUSED) gameState = SETTING_FOCUSED;
                             break;
                         case sf::Keyboard::W:
                             // LOGIC MỚI: Chỉ cần MoveUp một lần từ hàng 0 sẽ chuyển focus
                             if (gameState == BOARD_ACTIVE) {
                                 if (_currentRow == 0) { // Kiểm tra nếu đang ở hàng đầu tiên
-                                    gameState = PAUSE_FOCUSED; // Chuyển focus sang nút Pause trước
+                                    // Từ hàng trên cùng của bàn cờ
+                                    // Logic thông minh: Nếu ở bên trái bàn cờ -> lên Back, bên phải -> lên Pause
+                                    if (_currentCol < BOARD_SIZE / 2) gameState = BACK_FOCUSED;
+                                    else gameState = PAUSE_FOCUSED;
                                 }
                                 else {
                                     MoveUp();
@@ -172,6 +181,10 @@ main_menu:
                                     }
                                 }
                             }
+                            else if (gameState == BACK_FOCUSED) {
+                                // Xử lý Back -> Về Main Menu
+                                goto main_menu;
+                            }
                             else if (gameState == SETTING_FOCUSED) {
                                 handleSettings(window, font);
                                 gameState = BOARD_ACTIVE; // Quay lại bàn cờ sau khi thoát Settings
@@ -211,20 +224,29 @@ main_menu:
                 // Cập nhật trạng thái và vẽ nút
                 settingButton.setTexture(settingOffT);
                 pauseButton.setTexture(pauseOffT);
+				backButton.setTexture(backOffT);
 
                 // Khi focus Setting
                 if (gameState == SETTING_FOCUSED) {
                     settingButton.setTexture(settingOnT);
                     pauseButton.setTexture(pauseOffT);
+                    backButton.setTexture(backOffT);
                 }
                 // Khi focus Pause
                 else if (gameState == PAUSE_FOCUSED) {
                     pauseButton.setTexture(pauseOnT);
                     settingButton.setTexture(settingOffT);
+                    backButton.setTexture(backOffT);
+                }
+                else if (gameState == BACK_FOCUSED) { 
+                    backButton.setTexture(backOnT);
+                    pauseButton.setTexture(pauseOffT);
+                    settingButton.setTexture(settingOffT);
                 }
 
                 window.draw(settingButton);
                 window.draw(pauseButton);
+                window.draw(backButton);
                 window.display();
             }
 
