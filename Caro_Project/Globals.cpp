@@ -10,6 +10,7 @@ int _Y = 0;
 int _currentRow = 0;
 int _currentCol = 0;
 int _backgroundBoard = 1;
+bool _isPvE = false;
 
 int _winsX = 0;
 int _winsO = 0;
