@@ -315,3 +315,99 @@ bool LoadFromFile(int slot)
     return true;
 }
 
+// ====================== (BOT) ======================
+
+// Điểm ưu tiên: [0, 1 con, 2 con, 3 con, 4 con, 5 con]
+// Tấn công mạnh hơn phòng thủ một chút để máy aggressive hơn
+long AttackScore[7] = { 0, 9, 54, 162, 1458, 13122, 65000 };
+long DefenseScore[7] = { 0, 3, 27, 99, 729, 6561, 59000 };
+
+long EvaluatePosition(int row, int col) {
+    long totalScore = 0;
+    // 4 hướng: Ngang, Dọc, Chéo chính, Chéo phụ
+    int dr[4] = { 0, 1, 1, 1 };
+    int dc[4] = { 1, 0, 1, -1 };
+
+    // Máy là O (1), Người là X (-1)
+    for (int dir = 0; dir < 4; dir++) {
+        // --- TÍNH ĐIỂM TẤN CÔNG (Cho quân O) ---
+        int countAlly = 0;
+        int countEnemy = 0;
+
+        // Duyệt dương
+        for (int k = 1; k <= 4; k++) {
+            int r = row + dr[dir] * k;
+            int c = col + dc[dir] * k;
+            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (_A[r][c].c == 1) countAlly++;
+                else if (_A[r][c].c == -1) { countEnemy++; break; }
+                else break;
+            }
+            else break;
+        }
+        // Duyệt âm
+        for (int k = 1; k <= 4; k++) {
+            int r = row - dr[dir] * k;
+            int c = col - dc[dir] * k;
+            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (_A[r][c].c == 1) countAlly++;
+                else if (_A[r][c].c == -1) { countEnemy++; break; }
+                else break;
+            }
+            else break;
+        }
+
+        // Nếu bị chặn 2 đầu thì điểm tấn công = 0 (luật chặn 2 đầu hoặc để an toàn)
+        if (countEnemy == 2) totalScore += 0;
+        else totalScore += AttackScore[countAlly];
+
+        // --- TÍNH ĐIỂM PHÒNG THỦ (Chặn quân X) ---
+        countEnemy = 0;
+        int blocked = 0;
+
+        for (int k = 1; k <= 4; k++) {
+            int r = row + dr[dir] * k;
+            int c = col + dc[dir] * k;
+            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (_A[r][c].c == -1) countEnemy++;
+                else if (_A[r][c].c == 1) { blocked++; break; }
+                else break;
+            }
+            else { blocked++; break; }
+        }
+        for (int k = 1; k <= 4; k++) {
+            int r = row - dr[dir] * k;
+            int c = col - dc[dir] * k;
+            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (_A[r][c].c == -1) countEnemy++;
+                else if (_A[r][c].c == 1) { blocked++; break; }
+                else break;
+            }
+            else { blocked++; break; }
+        }
+
+        // Nếu địch chưa bị chặn hết thì cộng điểm phòng thủ
+        if (blocked < 2) totalScore += DefenseScore[countEnemy];
+    }
+    return totalScore;
+}
+
+_POINT GetBotMove() {
+    _POINT bestMove = { 0, 0, 0 };
+    long maxScore = -1;
+
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            // Chỉ tính điểm ô trống
+            if (_A[i][j].c == 0) {
+                long score = EvaluatePosition(i, j);
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestMove.x = i;
+                    bestMove.y = j;
+                }
+            }
+        }
+    }
+    return bestMove;
+}
