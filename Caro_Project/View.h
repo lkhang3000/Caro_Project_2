@@ -23,6 +23,7 @@ int ProcessFinish(int pWhoWin);
 void handleSettings(sf::RenderWindow& window, sf::Font& font);
 int handlePauseMenu(sf::RenderWindow& window, sf::Font& font);
 int modeChoosing(sf::RenderWindow& window);
+int opponentChoosing(sf::RenderWindow& window);
 //Load game
 int loadGameScreen(sf::RenderWindow& window);
 #endif
