@@ -977,10 +977,9 @@ void GotoXY(int x, int y) {
 	coord.Y = y;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
-
 void DrawBoard(sf::RenderWindow& window, int n, int result) {
-	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T;
-	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS;
+	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T;
+	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S;
 
 	board1T.loadFromFile("Assets/playing/board.png");
 	board3T.loadFromFile("Assets/playing/board_renju.png");
@@ -988,6 +987,8 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	xTexture.loadFromFile("Assets/playing/X_letter.png");
 	oTexture.loadFromFile("Assets/playing/O_letter.png");
 	barT.loadFromFile("Assets/background/text_board.png");
+	frameX_T.loadFromFile("Assets/playing/frameX.png");
+	frameO_T.loadFromFile("Assets/playing/frameO.png");
 
 	string bgPath = "Assets/background/board_background" + to_string(_backgroundBoard) + ".png";
 	bgTexture.loadFromFile(bgPath);
@@ -1006,24 +1007,25 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		boardS.setTexture(board3T);
 		break;
 	default:
-		boardS.setTexture(board1T); 
+		boardS.setTexture(board1T);
 		break;
 	}
 
 	xSprite.setTexture(xTexture);
 	oSprite.setTexture(oTexture);
 	barS.setTexture(barT);
+	frameX_S.setTexture(frameX_T);
+	frameO_S.setTexture(frameO_T);
 
-	//size bàn cờ
+	// Size bàn cờ
 	float boardScale = 3.5f;
 	boardS.setScale(boardScale, boardScale);
-
 
 	float boardX = 15.0f;
 	float boardY = 5.0f;
 	boardS.setPosition(boardX, boardY);
 
-	//Thanh thông báo
+	// Thanh thông báo
 	float barScale = 3.5f;
 	barS.setScale(barScale, barScale);
 	float barX = 35.0f;
@@ -1033,7 +1035,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	float originalCellSize = 12.04f;
 	float cellSize = originalCellSize * boardScale;
 
-	//Vị trí bắt đầu
+	// Vị trí bắt đầu
 	float offsetX = 413.0f;
 	float offsetY = 197.0f;
 
@@ -1044,13 +1046,26 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	xSprite.setScale(xScale, xScale);
 	oSprite.setScale(oScale, oScale);
 
+	// Setup frames cho stats
+	float frameScale = 3.5f;
+	frameX_S.setScale(frameScale, frameScale);
+	frameO_S.setScale(frameScale, frameScale);
+
+	// Vị trí frames
+	float frameLeftX = boardX + 30.0f;
+	float frameRightX = 200.0f;  // Vị trí cố định bên phải bảng cờ
+	float frameY = boardY + 80.0f;
+
+	frameX_S.setPosition(frameLeftX, frameY);
+	frameO_S.setPosition(frameRightX, frameY);
+
 	window.draw(bgSprite);
 	window.draw(boardS);
 
+	// Vẽ quân cờ
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		for (int j = 0; j < BOARD_SIZE; j++) {
 			if (_A[i][j].c != 0) {
-
 				float pieceX = boardX + offsetX + (j * cellSize) + (cellSize / 2.0f);
 				float pieceY = boardY + offsetY + (i * cellSize) + (cellSize / 2.0f);
 
@@ -1068,7 +1083,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		}
 	}
 
-	// Set up cursor
+	// Cursor
 	sf::RectangleShape cursor(sf::Vector2f(cellSize - 4, cellSize - 4));
 	cursor.setFillColor(sf::Color::Transparent);
 	cursor.setOutlineColor(sf::Color(138, 72, 54));
@@ -1079,10 +1094,15 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	cursor.setPosition(cursorX, cursorY);
 	window.draw(cursor);
 
+	// Vẽ frames
+	window.draw(frameX_S);
+	window.draw(frameO_S);
+
 	// Thông tin game
 	window.draw(barS);
 	sf::Font font;
 	if (font.loadFromFile("Assets/font/regular.ttf")) {
+		// Thông báo chính
 		sf::Text gameInfo;
 		gameInfo.setFont(font);
 		gameInfo.setCharacterSize(26);
@@ -1114,6 +1134,72 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 		gameInfo.setString(message);
 		window.draw(gameInfo);
+
+		
+		sf::Color textColor(54, 39, 32);
+
+		float textAreaX = frameLeftX + 80.0f;
+		float textAreaY = frameY + 180.0f;  
+
+		// Text "X" 
+		sf::Text titleX;
+		titleX.setFont(font);
+		titleX.setCharacterSize(36);
+		titleX.setStyle(sf::Text::Bold);
+		titleX.setFillColor(textColor);
+		titleX.setPosition(textAreaX + 65.0f, textAreaY - 10.0f);
+
+		// Text thông số X
+		sf::Text movesXText;
+		movesXText.setFont(font);
+		movesXText.setCharacterSize(24);
+		movesXText.setFillColor(textColor);
+		movesXText.setString("So luot: " + std::to_string(_movesX));
+		movesXText.setPosition(textAreaX + 10.0f, textAreaY + 40.0f);
+
+		sf::Text winsXText;
+		winsXText.setFont(font);
+		winsXText.setCharacterSize(24);
+		winsXText.setFillColor(textColor);
+		winsXText.setString("So thang: " + std::to_string(_winsX));
+		winsXText.setPosition(textAreaX + 10.0f, textAreaY + 75.0f);
+
+		window.draw(titleX);
+		window.draw(movesXText);
+		window.draw(winsXText);
+
+		// Stats cho O
+
+		// Tính vị trí của khung trắng trong frame O
+		float textAreaOX = frameRightX + 880.0f;
+		float textAreaOY = frameY + 180.0f;
+
+		// Text "O"
+		sf::Text titleO;
+		titleO.setFont(font);
+		titleO.setCharacterSize(36);
+		titleO.setStyle(sf::Text::Bold);
+		titleO.setFillColor(textColor);
+		titleO.setPosition(textAreaOX + 65.0f, textAreaOY - 10.0f);
+
+		// Text thông số O
+		sf::Text movesOText;
+		movesOText.setFont(font);
+		movesOText.setCharacterSize(24);
+		movesOText.setFillColor(textColor);
+		movesOText.setString("So luot: " + std::to_string(_movesO));
+		movesOText.setPosition(textAreaOX + 10.0f, textAreaOY + 40.0f);
+
+		sf::Text winsOText;
+		winsOText.setFont(font);
+		winsOText.setCharacterSize(24);
+		winsOText.setFillColor(textColor);
+		winsOText.setString("So thang: " + std::to_string(_winsO));
+		winsOText.setPosition(textAreaOX + 10.0f, textAreaOY + 75.0f);
+
+		window.draw(titleO);
+		window.draw(movesOText);
+		window.draw(winsOText);
 	}
 }
 
@@ -1122,13 +1208,17 @@ int ProcessFinish(int pWhoWin) {
 	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
 	switch (pWhoWin) {
 	case -1:
-		printf("Nguoi choi %d da thang va nguoi choi %d da thua\n", true, false);
+		// X thắng
+		++_winsX;
+		printf("Nguoi choi X da thang\n");
 		break;
 	case 1:
-		printf("Nguoi choi %d da thang va nguoi choi %d da thua\n", false, true);
+		// O thắng
+		++_winsO;
+		printf("Nguoi choi O da thang\n");
 		break;
 	case 0:
-		printf("Nguoi choi %d da hoa nguoi choi %d\n", false, true);
+		printf("Hoa!\n");
 		break;
 	case 2:
 		_TURN = !_TURN;

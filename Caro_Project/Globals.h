@@ -15,4 +15,9 @@ extern int _currentRow;
 extern int _currentCol;
 extern int _backgroundBoard;
 
+extern int _winsX;  
+extern int _winsO;  
+extern int _movesX;  
+extern int _movesO;  
+
 #endif

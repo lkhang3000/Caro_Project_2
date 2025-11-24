@@ -55,6 +55,12 @@ void MoveUp() {
 bool PlacePiece() {
     if (_A[_currentRow][_currentCol].c == 0) {  // Ô trống
         _A[_currentRow][_currentCol].c = _TURN ? -1 : 1;
+        // increment move count for the player who moved
+        if (_TURN) {
+            ++_movesX;
+        } else {
+            ++_movesO;
+        }
         return true;  // Đặt thành công
     }
     return false;  // Ô đã có quân

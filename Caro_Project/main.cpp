@@ -154,9 +154,22 @@ main_menu:
                         {
                             if (gameState == BOARD_ACTIVE) {
                                 if (PlacePiece()) {
+
+                                    // moves already incremented inside PlacePiece()
                                     result = TestBoard(rule);
+
+                                    // update wins when the game ends (TestBoard returns -1 for X, 1 for O, 0 for draw)
+                                    if (result == -1) {
+                                        ++_winsX;
+                                    } else if (result == 1) {
+                                        ++_winsO;
+                                    }
+
                                     _TURN = !_TURN;
-                                    if (result != 2) { /* Game over logic */ }
+
+                                    if (result != 2) {
+                                        // existing game-over handling (keep as before)
+                                    }
                                 }
                             }
                             else if (gameState == SETTING_FOCUSED) {

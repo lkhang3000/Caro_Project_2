@@ -11,3 +11,7 @@ int _currentRow = 0;
 int _currentCol = 0;
 int _backgroundBoard = 1;
 
+int _winsX = 0;
+int _winsO = 0;
+int _movesX = 0;
+int _movesO = 0;
