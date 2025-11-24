@@ -43,6 +43,15 @@ main_menu:
         }
         case 2: // Mới / Tiếp tục Game (SFML Loop)
         {
+			//Chọn PvP hay PvE
+			int opponent = opponentChoosing(window);   
+			if (opponent == -1) break;
+			if (opponent == 1) {
+			    _isPvE = true;  
+			}
+			else {
+			    _isPvE = false; 
+			}
             // === 1. Tải Font và Assets cho Game Play ===
             sf::Font font;
             if (!font.loadFromFile("Assets/font/regular.ttf")) {
@@ -97,6 +106,17 @@ main_menu:
 
             // === 3. Vòng lặp Game Play ===
             while (window.isOpen()) {
+				if (_isPvE && !_TURN && result == 2 && !isPaused) {
+				    sf::sleep(sf::milliseconds(300)); 
+				    _POINT botMove = GetBotMove();                     
+				    _currentRow = botMove.x;
+				    _currentCol = botMove.y;
+				    if (PlacePiece()) {
+				        result = TestBoard(rule); 
+				        _TURN = !_TURN;           
+				    }
+				}
+				// ==========================================================
                 sf::Event event;
                 while (window.pollEvent(event)) {
                     if (event.type == sf::Event::Closed) {
@@ -104,6 +124,10 @@ main_menu:
                         return 0;
                     }
                     if (event.type == sf::Event::KeyPressed) {
+						// Nếu là PvE + Lượt Máy (O) + Game chưa xong -> Bỏ qua mọi phím bấm
+						if (_isPvE && !_TURN && result == 2) {
+						    continue;
+						}
 
                         // 1. Xử lý khi Game đã kết thúc (result != 2)
                         if (result != 2) {
