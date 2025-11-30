@@ -1,4 +1,5 @@
-﻿#include <SFML/Graphics.hpp>
+﻿#pragma execution_character_set("utf-8")
+#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include "View.h"
 #include "Model.h"
@@ -6,6 +7,8 @@
 
 #define scaleX 4.26875f
 #define scaleY 4.267f
+static sf::Texture sharedBgTexture;
+static sf::Sprite sharedBgSprite;
 
 
 void FixConsoleWindow() {
@@ -499,8 +502,8 @@ int modeChoosing(sf::RenderWindow& window) {
 	bg.setScale(scaleX, scaleY);
 
 	//Tải ảnh từ folder
-	sf::Texture card1Front, card1Back, card1BG, card2Front, card2Back, card2BG, card3Front, card3Back, card3BG, 
-				okButton, okButtonDark, backButton, backButtonDark, settingButton, settingButtonDark;
+	sf::Texture card1Front, card1Back, card1BG, card2Front, card2Back, card2BG, card3Front, card3Back, card3BG,
+		okButton, okButtonDark, backButton, backButtonDark, settingButton, settingButtonDark;
 	card1Front.loadFromFile("Assets/playing/card1.png");
 	card1Back.loadFromFile("Assets/playing/card1_back.png");
 	card1BG.loadFromFile("Assets/playing/card1_unchosen.png");
@@ -579,8 +582,8 @@ int modeChoosing(sf::RenderWindow& window) {
 	// Back button
 	backButtonS.setScale(scaleX - 1.5f, scaleY - 1.5f);
 	backButton_Dark.setScale(scaleX - 1.5f, scaleY - 1.5f);
-	backButtonS.setPosition(- 830.0f, 10.0f);
-	backButton_Dark.setPosition(- 830.0f, 10.0f);
+	backButtonS.setPosition(-830.0f, 10.0f);
+	backButton_Dark.setPosition(-830.0f, 10.0f);
 
 	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
 	setting_Dark.setScale(scaleX - 1.3f, scaleY - 1.3f);
@@ -895,148 +898,6 @@ int modeChoosing(sf::RenderWindow& window) {
 	return -1;
 }
 
-int loadGameScreen(sf::RenderWindow& window)
-{
-	// ============ LOAD TEXTURES ============
-	sf::Texture bgT, tableT, titleT;
-	bgT.loadFromFile("Assets/background/background_menu.png");
-	tableT.loadFromFile("Assets/background/load_table.png");
-	titleT.loadFromFile("Assets/background/load_title.png");
-
-	sf::Sprite bg(bgT), table(tableT), title(titleT);
-	bg.setScale(scaleX, scaleY);
-	table.setScale(scaleX, scaleY);
-	title.setScale(scaleX, scaleY);
-
-	// ===== BLANKS =====
-	const int slotCount = 5;
-	sf::Texture blankT[slotCount];
-	sf::Sprite blankS[slotCount];
-	for (int i = 0; i < slotCount; ++i) {
-		std::string path = "Assets/background/blank" + std::to_string(i + 1) + ".png";
-		blankT[i].loadFromFile(path);
-		blankS[i].setTexture(blankT[i]);
-		blankS[i].setScale(scaleX, scaleY);
-	}
-
-	// ===== BUTTONS =====
-	sf::Texture tOnLoad, tOffLoad, tOnDelete, tOffDelete, tOnRename, tOffRename;
-	sf::Texture tOnExit, tOffExit;
-	tOnLoad.loadFromFile("Assets/button/on_load_button.png");
-	tOffLoad.loadFromFile("Assets/button/off_load_button.png");
-	tOnDelete.loadFromFile("Assets/button/on_delete_button.png");
-	tOffDelete.loadFromFile("Assets/button/off_delete_button.png");
-	tOnRename.loadFromFile("Assets/button/on_rename_button.png");
-	tOffRename.loadFromFile("Assets/button/off_rename_button.png");
-	tOnExit.loadFromFile("Assets/button/on_exit_load_button.png");
-	tOffExit.loadFromFile("Assets/button/off_exit_load_button.png");
-
-	sf::Sprite btnLoad(tOffLoad), btnDelete(tOffDelete), btnRename(tOffRename), btnExit(tOffExit);
-	btnLoad.setScale(scaleX, scaleY);
-	btnDelete.setScale(scaleX, scaleY);
-	btnRename.setScale(scaleX, scaleY);
-	btnExit.setScale(scaleX, scaleY);
-
-	// ===== STATE =====
-	int selectedSlot = 0;   // 0..4 = blank1..5, 5=Load,6=Rename,7=Delete,8=Exit
-	bool inButton = false;
-	int lastSlot = 0;       // nhớ slot trước khi chuyển qua nút
-
-	while (window.isOpen()) {
-		sf::Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) { window.close(); return 0; }
-
-			if (event.type == sf::Event::KeyPressed) {
-				auto key = event.key.code;
-
-				// ESC thoát
-				if (key == sf::Keyboard::Escape) return 0;
-
-				// ======== VÙNG SLOT ========
-				if (!inButton) {
-					if (key == sf::Keyboard::Down || key == sf::Keyboard::S) {
-						if (selectedSlot < slotCount - 1)
-							selectedSlot++;
-					}
-					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W) {
-						if (selectedSlot > 0)
-							selectedSlot--;
-						else
-							selectedSlot = 8, inButton = true; // từ blank1 lên exit
-					}
-					else if (key == sf::Keyboard::Right || key == sf::Keyboard::D) {
-						inButton = true;
-						lastSlot = selectedSlot;
-						selectedSlot = 5; // sang nút Load
-					}
-				}
-				// ======== VÙNG BUTTON ========
-				else {
-					if (key == sf::Keyboard::Down || key == sf::Keyboard::S) {
-						if (selectedSlot == 8) { // Exit xuống lại blank1
-							inButton = false;
-							selectedSlot = 0;
-						}
-						else if (selectedSlot < 8) selectedSlot++;
-					}
-					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W) {
-						if (selectedSlot == 5) { // Load lên Exit
-							selectedSlot = 8;
-						}
-						else if (selectedSlot > 5) selectedSlot--;
-					}
-					else if (key == sf::Keyboard::Left || key == sf::Keyboard::A) {
-						inButton = false;
-						selectedSlot = lastSlot; // quay về slot cũ
-					}
-				}
-
-				// ======== ENTER CHỌN ========
-				if (key == sf::Keyboard::Enter) {
-					if (!inButton) return selectedSlot + 1; // chọn slot
-					else {
-						switch (selectedSlot) {
-						case 5: return selectedSlot + 1;      // Load
-						case 6: std::cout << "Rename slot selected\n"; break;
-						case 7: std::cout << "Delete slot selected\n"; break;
-						case 8: return 0;                     // Exit
-						}
-					}
-				}
-			}
-		}
-
-		// ===== DRAW =====
-		window.clear();
-		window.draw(bg);
-		window.draw(table);
-		window.draw(title);
-
-		// highlight slot
-		for (int i = 0; i < slotCount; ++i) {
-			blankS[i].setColor(!inButton && selectedSlot == i
-				? sf::Color::White
-				: sf::Color(180, 180, 180, 255));
-			window.draw(blankS[i]);
-		}
-
-		// highlight buttons
-		btnLoad.setTexture(selectedSlot == 5 ? tOnLoad : tOffLoad);
-		btnRename.setTexture(selectedSlot == 6 ? tOnRename : tOffRename);
-		btnDelete.setTexture(selectedSlot == 7 ? tOnDelete : tOffDelete);
-		btnExit.setTexture(selectedSlot == 8 ? tOnExit : tOffExit);
-
-		window.draw(btnLoad);
-		window.draw(btnRename);
-		window.draw(btnDelete);
-		window.draw(btnExit);
-
-		window.display();
-	}
-
-	return 0;
-}
 
 
 void GotoXY(int x, int y) {
@@ -1482,4 +1343,522 @@ int opponentChoosing(sf::RenderWindow& window) {
 		window.display();
 	}
 	return -1;
+}
+
+// Save + Load
+std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::View& restoreView, std::string initialText)
+{
+	
+	sharedBgTexture.create(window.getSize().x, window.getSize().y);
+	sharedBgTexture.update(window); // Chụp màn hình hiện tại
+	sharedBgSprite.setTexture(sharedBgTexture);
+	sharedBgSprite.setColor(sf::Color(150, 150, 150));
+
+	sf::Texture boardOnT, boardOffT, okOnT, okOffT, exitOnT, exitOffT;
+
+	// Load Assets (Giữ nguyên)
+	boardOnT.loadFromFile("Assets/background/save_board_on.png");
+	boardOffT.loadFromFile("Assets/background/save_board_off.png");
+	okOnT.loadFromFile("Assets/button/save_ok_on.png");
+	okOffT.loadFromFile("Assets/button/save_ok_off.png");
+	exitOnT.loadFromFile("Assets/button/save_exit_on.png");
+	exitOffT.loadFromFile("Assets/button/save_exit_off.png");
+
+	sf::Sprite boardS(boardOnT);
+	sf::Sprite btnOK(okOffT);
+	sf::Sprite btnExit(exitOffT);
+
+	// Cài đặt vị trí 
+	boardS.setScale(scaleX, scaleY);
+	btnOK.setScale(scaleX, scaleY);
+	btnExit.setScale(scaleX, scaleY);
+
+	sf::Vector2u winSize = window.getSize();
+	float actualBoardWidth = boardOnT.getSize().x * scaleX;
+	float actualBoardHeight = boardOnT.getSize().y * scaleY;
+
+	float centerX = (winSize.x - actualBoardWidth) / 2.f;
+	float centerY = (winSize.y - actualBoardHeight) / 2.f;
+
+	boardS.setPosition(centerX, centerY);
+	btnOK.setPosition(centerX, centerY);
+	btnExit.setPosition(centerX, centerY);
+
+	// Ô nhập liệu
+	float textInputX = centerX + (actualBoardWidth * 0.43f);
+	float textInputY = centerY + (actualBoardHeight * 0.42f);
+
+	std::string userInput = initialText;
+	sf::Text inputText(userInput, font, 35);
+	inputText.setFillColor(sf::Color(80, 48, 32));
+	inputText.setPosition(textInputX, textInputY);
+
+	int selectedControl = 0; 
+	sf::Clock cursorClock;
+
+	
+	window.setView(window.getDefaultView());
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::TextEntered)
+			{
+				if (selectedControl == 0)
+				{
+					if (event.text.unicode == 8) { 
+						if (!userInput.empty()) userInput.pop_back();
+					}
+					else if (event.text.unicode > 31 && event.text.unicode < 127 && userInput.length() < 18) {
+						if (std::isalnum(static_cast<char>(event.text.unicode)) || event.text.unicode == '_' || event.text.unicode == ' ') {
+							userInput += static_cast<char>(event.text.unicode);
+						}
+					}
+					inputText.setString(userInput);
+				}
+			}
+			if (event.type == sf::Event::KeyPressed)
+			{
+				auto key = event.key.code;
+				if (key == sf::Keyboard::W || key == sf::Keyboard::Up) {
+					if (selectedControl == 1) selectedControl = 0;
+					else if (selectedControl == 0) selectedControl = 2;
+				}
+				else if (key == sf::Keyboard::S || key == sf::Keyboard::Down) {
+					if (selectedControl == 2) selectedControl = 0;
+					else if (selectedControl == 0) selectedControl = 1;
+				}
+				else if (key == sf::Keyboard::Enter) {
+					if (selectedControl == 1) { // OK
+						return userInput;
+					}
+					else if (selectedControl == 2) return ""; // Exit
+					else if (selectedControl == 0) selectedControl = 1;
+				}
+				else if (key == sf::Keyboard::Escape) return "";
+			}
+		}
+
+		window.clear();
+
+		window.draw(sharedBgSprite);
+
+		if (selectedControl == 0) boardS.setTexture(boardOnT);
+		else boardS.setTexture(boardOffT);
+
+		btnOK.setTexture(selectedControl == 1 ? okOnT : okOffT);
+		btnExit.setTexture(selectedControl == 2 ? exitOnT : exitOffT);
+
+		bool showCursor = (selectedControl == 0) && (cursorClock.getElapsedTime().asSeconds() < 0.5f);
+		if (cursorClock.getElapsedTime().asSeconds() > 1.f) cursorClock.restart();
+		inputText.setString(userInput + (showCursor ? "|" : ""));
+
+		window.draw(boardS);
+		window.draw(inputText);
+		window.draw(btnOK);
+		window.draw(btnExit);
+		window.display();
+	}
+	return "";
+}
+
+int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue)
+{
+	sf::Texture blankT, yesOnT, yesOffT, noOnT, noOffT, okOnT, okOffT;
+
+	// Load Assets
+	if (!blankT.loadFromFile("Assets/background/save_board_blank.png")) return 0;
+	if (!yesOnT.loadFromFile("Assets/button/save_blank_yes_on.png")) return 0;
+	if (!yesOffT.loadFromFile("Assets/button/save_blank_yes_off.png")) return 0;
+	if (!noOnT.loadFromFile("Assets/button/save_blank_no_on.png")) return 0;
+	if (!noOffT.loadFromFile("Assets/button/save_blank_no_off.png")) return 0;
+
+	// Load thêm nút OK cho trường hợp Load/Rename
+	if (!okOnT.loadFromFile("Assets/button/save_ok_on.png")) return 0;
+	if (!okOffT.loadFromFile("Assets/button/save_ok_off.png")) return 0;
+
+	sf::Sprite blankS(blankT);
+	sf::Sprite btnYes(yesOffT), btnNo(noOffT);
+	sf::Sprite btnOK(okOffT); // Sprite cho nút OK
+
+	blankS.setScale(scaleX, scaleY);
+	btnYes.setScale(scaleX, scaleY);
+	btnNo.setScale(scaleX, scaleY);
+	btnOK.setScale(scaleX, scaleY);
+
+	sf::Vector2u winSize = window.getSize();
+
+	// Tính toán vị trí trung tâm
+	float actualWidth = blankT.getSize().x * scaleX;
+	float actualHeight = blankT.getSize().y * scaleY;
+	float centerX = (winSize.x - actualWidth) / 2.f;
+	float centerY = (winSize.y - actualHeight) / 2.f;
+
+	// Đặt vị trí (Tất cả đều nằm trùng khớp lên nhau tại centerX, centerY)
+	blankS.setPosition(centerX, centerY);
+	btnYes.setPosition(centerX, centerY);
+	btnNo.setPosition(centerX, centerY);
+	btnOK.setPosition(centerX, centerY);
+
+	
+	sf::Text msg1, msg2, msg3;
+	msg1.setFont(font);
+	msg2.setFont(font);
+	msg3.setFont(font);
+
+	msg1.setCharacterSize(40);
+	msg2.setCharacterSize(30);
+	msg3.setCharacterSize(30);
+
+	msg1.setFillColor(sf::Color(80, 48, 32));
+	msg2.setFillColor(sf::Color(80, 48, 32));
+
+	if (askContinue) {
+		msg1.setString(L"Lưu thành công!");
+		msg2.setString(L"Bạn có muốn chơi tiếp không?");
+	}
+	else {
+		msg1.setString(L"Lưu thành công!");
+		msg2.setString(L"     Nhấn Ok để tiếp tục ");
+	}
+
+	msg1.setPosition(centerX + actualWidth * 0.40f, centerY + actualHeight * 0.35f);
+	msg2.setPosition(centerX + actualWidth * 0.35f, centerY + actualHeight * 0.44f);
+	int selectedButton = 0; 
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::KeyPressed)
+			{
+				if (askContinue) {
+					if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left)
+						selectedButton = 0;
+					else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right)
+						selectedButton = 1;
+				}
+
+				if (event.key.code == sf::Keyboard::Enter)
+					return selectedButton; // 0: Yes/OK, 1: No
+			}
+		}
+
+		// Vẽ nền cũ
+		window.draw(sharedBgSprite);
+		window.draw(blankS);
+		window.draw(msg1);
+		window.draw(msg2);
+
+		if (askContinue) {
+			// Logic vẽ nút Yes/No
+			if (selectedButton == 0) {
+				btnYes.setTexture(yesOnT);
+				btnNo.setTexture(noOffT);
+			}
+			else {
+				btnYes.setTexture(yesOffT);
+				btnNo.setTexture(noOnT);
+			}
+			window.draw(btnYes);
+			window.draw(btnNo);
+		}
+		else {
+			// Logic vẽ nút OK
+			btnOK.setTexture(okOnT); // Luôn sáng
+			window.draw(btnOK);
+		}
+
+		window.display();
+	}
+	return 0;
+}
+
+int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView)
+{
+	std::string filename = GetInputString(window, font, gameView);
+	if (filename == "") return 2; // Hủy bỏ, quay lại game
+
+	// Lưu game
+	if (filename.empty()) filename = "Untitled";
+	extern GameRule rule;
+	SaveGame(filename, rule, 2); // 2 = Đang chơi
+
+	// Thông báo thành công và hỏi chơi tiếp
+	int choice = handleSaveSuccessScreen(window, font, true);
+	if (choice == 0) return 1; // Yes -> Chơi tiếp
+	return 0; // No -> Về menu chính
+}
+
+int loadGameScreen(sf::RenderWindow& window)
+{
+	sf::Font font;
+	if (!font.loadFromFile("Assets/font/regular.ttf"))
+	{
+		std::cerr << "Loi font!\n";
+	}
+
+	// --- SETUP TEXTURES ---
+	sf::Texture bgT, tableT, titleT;
+	bgT.loadFromFile("Assets/background/background_menu.png");
+	tableT.loadFromFile("Assets/background/load_table.png");
+	titleT.loadFromFile("Assets/background/load_title.png");
+
+	sf::Sprite bg(bgT), table(tableT), title(titleT);
+	bg.setScale(scaleX, scaleY);
+	table.setScale(scaleX, scaleY);
+	title.setScale(scaleX, scaleY);
+
+	// --- BUTTONS ---
+	sf::Texture tOnLoad, tOffLoad, tOnDelete, tOffDelete, tOnRename, tOffRename, tOnExit, tOffExit;
+	tOnLoad.loadFromFile("Assets/button/on_load_button.png");
+	tOffLoad.loadFromFile("Assets/button/off_load_button.png");
+	tOnDelete.loadFromFile("Assets/button/on_delete_button.png");
+	tOffDelete.loadFromFile("Assets/button/off_delete_button.png");
+	tOnRename.loadFromFile("Assets/button/on_rename_button.png");
+	tOffRename.loadFromFile("Assets/button/off_rename_button.png");
+	tOnExit.loadFromFile("Assets/button/on_exit_load_button.png");
+	tOffExit.loadFromFile("Assets/button/off_exit_load_button.png");
+
+	sf::Sprite btnLoad(tOffLoad), btnDelete(tOffDelete), btnRename(tOffRename), btnExit(tOffExit);
+	btnLoad.setScale(scaleX, scaleY);
+	btnDelete.setScale(scaleX, scaleY);
+	btnRename.setScale(scaleX, scaleY);
+	btnExit.setScale(scaleX, scaleY);
+
+	// --- SETUP SLOTS ---
+	const int slotsPerPage = 5;
+	sf::Texture blankT[slotsPerPage];
+	sf::Sprite blankS[slotsPerPage];
+
+	// Tọa độ tính toán (Của bạn)
+	float startY = 220.0f;
+	float stepY = 80.0f;
+	float startX = 350.0f;
+
+	for (int i = 0; i < slotsPerPage; ++i)
+	{
+		std::string path = "Assets/background/blank" + std::to_string(i + 1) + ".png";
+		blankT[i].loadFromFile(path);
+		blankS[i].setTexture(blankT[i]);
+		blankS[i].setScale(scaleX, scaleY);
+		blankS[i].setPosition(0.0f, 0.0f);
+	}
+
+	// --- SETUP TEXT ---
+	sf::Text txtName, txtRule, txtTime, txtDate, txtEmpty;
+	txtName.setFont(font);
+	txtRule.setFont(font);
+	txtTime.setFont(font);
+	txtDate.setFont(font);
+	txtEmpty.setFont(font);
+
+	sf::Color brownColor(80, 48, 32);
+	txtName.setFillColor(brownColor);
+	txtRule.setFillColor(brownColor);
+	txtTime.setFillColor(brownColor);
+	txtDate.setFillColor(brownColor);
+	txtEmpty.setFillColor(sf::Color(150, 150, 150));
+
+	txtName.setCharacterSize(30);
+	txtRule.setCharacterSize(24);
+	txtTime.setCharacterSize(20);
+	txtDate.setCharacterSize(20);
+	txtEmpty.setCharacterSize(28);
+
+	int selectedSlot = 0;
+	bool inButton = false;
+	int lastSlot = 0;
+
+	while (window.isOpen())
+	{
+		
+		std::vector<SaveInfo> allSaves = GetListSaveFiles();
+		int totalFiles = static_cast<int>(allSaves.size());
+
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+				return 0;
+			}
+			if (event.type == sf::Event::KeyPressed)
+			{
+				auto key = event.key.code;
+				if (key == sf::Keyboard::Escape)
+					return 0;
+
+				// --- ĐIỀU HƯỚNG (GIỮ NGUYÊN) ---
+				if (!inButton)
+				{
+					if (key == sf::Keyboard::Down || key == sf::Keyboard::S)
+					{
+						if (selectedSlot < slotsPerPage - 1)
+							selectedSlot++;
+					}
+					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W)
+					{
+						if (selectedSlot > 0)
+							selectedSlot--;
+						else
+						{
+							selectedSlot = 8;
+							inButton = true;
+						}
+					}
+					else if (key == sf::Keyboard::Right || key == sf::Keyboard::D)
+					{
+						inButton = true;
+						lastSlot = selectedSlot;
+						selectedSlot = 5;
+					}
+				}
+				else
+				{
+					if (key == sf::Keyboard::Down || key == sf::Keyboard::S)
+					{
+						if (selectedSlot == 8)
+						{
+							inButton = false;
+							selectedSlot = 0;
+						}
+						else if (selectedSlot < 8)
+							selectedSlot++;
+					}
+					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W)
+					{
+						if (selectedSlot == 5)
+							selectedSlot = 8;
+						else if (selectedSlot > 5)
+							selectedSlot--;
+					}
+					else if (key == sf::Keyboard::Left || key == sf::Keyboard::A)
+					{
+						inButton = false;
+						selectedSlot = lastSlot;
+					}
+				}
+
+				// --- XỬ LÝ CHỌN (ENTER) - ĐÃ THÊM LOGIC ---
+				if (key == sf::Keyboard::Enter)
+				{
+					if (!inButton)
+					{
+						// Chọn trực tiếp vào slot -> LOAD
+						if (selectedSlot < totalFiles)
+						{
+							if (LoadFromFile(allSaves[selectedSlot].fullPath))
+							{
+								return 1; // Load thành công
+							}
+						}
+					}
+					else
+					{
+						// Chọn các nút chức năng
+						if (selectedSlot == 5) // NÚT LOAD
+						{
+							if (lastSlot < totalFiles)
+							{
+								if (LoadFromFile(allSaves[lastSlot].fullPath))
+								{
+									return 1;
+								}
+							}
+						}
+						else if (selectedSlot == 6) // NÚT RENAME
+						{
+							if (lastSlot < totalFiles)
+							{
+								std::string oldName = allSaves[lastSlot].filename;
+								// Gọi bảng nhập tên
+								std::string newName = GetInputString(window, font, window.getDefaultView(), oldName);
+
+								if (!newName.empty() && newName != oldName)
+								{
+									if (RenameSaveFile(oldName, newName))
+									{
+										// Thông báo thành công (false = không hỏi chơi tiếp)
+										handleSaveSuccessScreen(window, font, false);
+									}
+								}
+							}
+						}
+						else if (selectedSlot == 7) // NÚT DELETE
+						{
+							if (lastSlot < totalFiles)
+							{
+								if (DeleteSaveFile(allSaves[lastSlot].filename))
+								{
+							
+								}
+							}
+						}
+						else if (selectedSlot == 8) // NÚT EXIT
+							return 0;
+					}
+				}
+			}
+		}
+
+		window.clear();
+		window.draw(bg);
+		window.draw(table);
+		window.draw(title);
+
+
+		for (int i = 0; i < slotsPerPage; ++i)
+		{
+			
+			if (!inButton && selectedSlot == i)
+				blankS[i].setColor(sf::Color::White);
+			else if (inButton && lastSlot == i)
+				blankS[i].setColor(sf::Color(220, 220, 220));
+			else
+				blankS[i].setColor(sf::Color(120, 120, 120));
+
+			window.draw(blankS[i]);
+
+			float currentY = startY + (static_cast<float>(i) * stepY);
+
+			if (i < totalFiles)
+			{
+				SaveInfo& info = allSaves[i];
+
+				txtName.setString(info.filename);
+				txtName.setPosition(startX - 150.0f, currentY + 40.0f);
+
+				txtRule.setString(info.ruleName);
+				txtRule.setPosition(startX + 100.0f, currentY + 45.0f);
+
+				txtTime.setString(info.time);
+				txtDate.setString(info.date);
+				txtTime.setPosition(startX + 350.0f, currentY + 36.0f);
+				txtDate.setPosition(startX + 350.0f, currentY + 61.0f);
+
+				window.draw(txtName);
+				window.draw(txtRule);
+				window.draw(txtTime);
+				window.draw(txtDate);
+			}
+		}
+
+		btnLoad.setTexture(selectedSlot == 5 ? tOnLoad : tOffLoad);
+		btnRename.setTexture(selectedSlot == 6 ? tOnRename : tOffRename);
+		btnDelete.setTexture(selectedSlot == 7 ? tOnDelete : tOffDelete);
+		btnExit.setTexture(selectedSlot == 8 ? tOnExit : tOffExit);
+
+		window.draw(btnLoad);
+		window.draw(btnRename);
+		window.draw(btnDelete);
+		window.draw(btnExit);
+
+		window.display();
+	}
+	return 0;
 }

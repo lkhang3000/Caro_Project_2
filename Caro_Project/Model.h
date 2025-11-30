@@ -1,24 +1,16 @@
-﻿#include "Globals.h"
+﻿#pragma once
+#ifndef Model_h
+#define Model_h
+
+#include "Globals.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <ctime>
 #include <string>
 #include <sstream>
+#include <vector>
 
-#ifdef _WIN32
-#include <direct.h> // để dùng _mkdir
-#pragma warning(disable : 4996) // Tắt cảnh báo localtime
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
-#pragma execution_character_set("utf-8")
-using namespace std;
-
-// ====================== CẤU TRÚC CHUNG ======================
 
 // Reset bàn cờ, gán lại tọa độ và giá trị mặc định
 void ResetData();
@@ -58,9 +50,30 @@ int TestBoard(GameRule rule);
 
 // ====================== LƯU & TẢI GAME ======================
 bool LoadFromFile(int slot);
+
+// Thêm std:: trước string
+bool LoadFromFile(const std::string& filePath);
+
+// Thêm std:: trước string
 void SaveGame(const std::string& filename, GameRule rule, int result);
+bool RenameSaveFile(const std::string& oldFilename, const std::string& newFilename);
+bool DeleteSaveFile(const std::string& filename);
+
 // =============================PvE========================================
+struct SaveInfo {
+    std::string filename; // Tên file hiển thị (ví dụ: duyio)
+    std::string fullPath; // Đường dẫn đầy đủ (Saves/duyio.sav)
+    std::string date;
+    std::string time;
+    std::wstring ruleName;
+    bool isValid = false; // <--- Đã khởi tạo để tránh lỗi
+};
+
+// Thêm std:: trước vector
+std::vector<SaveInfo> GetListSaveFiles();
+
 _POINT GetBotMove();
 
 extern GameRule _rule;
 
+#endif

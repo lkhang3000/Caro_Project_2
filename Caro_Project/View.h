@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <Windows.h>
 #include <iostream>
+#include <string>
 #include <conio.h>
 #include <string>
 
@@ -26,6 +27,12 @@ int modeChoosing(sf::RenderWindow& window);
 int opponentChoosing(sf::RenderWindow& window);
 //Load game
 int loadGameScreen(sf::RenderWindow& window);
+//Save game
+// Trong View.h
+// Trong View.h
+int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue = true);
+int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView);
+std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView, std::string initialText = "");
 #endif
 
 // Console versions

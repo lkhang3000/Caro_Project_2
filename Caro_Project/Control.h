@@ -2,7 +2,6 @@
 #ifndef Control_h
 #define Control_h
 #include <iostream>
-using namespace std;
 void StartGame();
 void ExitGame();
 void MoveRight();
