@@ -516,8 +516,8 @@ int modeChoosing(sf::RenderWindow& window) {
 
 	okButton.loadFromFile("Assets/button/ok_button.png");
 	okButtonDark.loadFromFile("Assets/button/ok_buttonDark.png");
-	backButton.loadFromFile("Assets/button/pause_button_on.png");
-	backButtonDark.loadFromFile("Assets/button/pause_button_off.png");
+	backButton.loadFromFile("Assets/button/back.png");
+	backButtonDark.loadFromFile("Assets/button/back_off.png");
 	settingButton.loadFromFile("Assets/button/setting2_button_on.png");
 	settingButtonDark.loadFromFile("Assets/button/setting2_button_off.png");
 
@@ -542,12 +542,12 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite setting_Dark(settingButtonDark);
 
 
-	float card1CenterX = 270.0f;
-	float card1CenterY = 380.0f;
-	float card2CenterX = 660.0f;
-	float card2CenterY = 380.0f;
-	float card3CenterX = 1100.0f;
-	float card3CenterY = 380.0f;
+	float card1CenterX = 290.0f;
+	float card1CenterY = 385.0f;
+	float card2CenterX = 675.0f;
+	float card2CenterY = 385.0f;
+	float card3CenterX = 1110.0f;
+	float card3CenterY = 385.0f;
 
 	//Set origin và position
 	//Card 1
@@ -580,10 +580,10 @@ int modeChoosing(sf::RenderWindow& window) {
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
 	// Back button
-	backButtonS.setScale(scaleX - 1.5f, scaleY - 1.5f);
-	backButton_Dark.setScale(scaleX - 1.5f, scaleY - 1.5f);
-	backButtonS.setPosition(-830.0f, 10.0f);
-	backButton_Dark.setPosition(-830.0f, 10.0f);
+	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButton_Dark.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonS.setPosition(40.0f, - 40.0f);
+	backButton_Dark.setPosition(40.0f, - 40.0f);
 
 	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
 	setting_Dark.setScale(scaleX - 1.3f, scaleY - 1.3f);
@@ -620,7 +620,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	freestylesText.setString(freestyleString);
 	freestylesText.setCharacterSize(27);
 	freestylesText.setFillColor(sf::Color(80, 48, 32));
-	freestylesText.setPosition(120.f, 380.f);
+	freestylesText.setPosition(140.f, 385.f);
 
 	// Card 2: Tiêu chuẩn
 	sf::Text standardText;
@@ -635,7 +635,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	standardText.setString(standardString);
 	standardText.setCharacterSize(27);
 	standardText.setFillColor(sf::Color(80, 48, 32));
-	standardText.setPosition(527.f, 380.f);
+	standardText.setPosition(542.f, 385.f);
 
 	// Card 3: Chặn 2 đầu
 	sf::Text block2endsText;
@@ -651,7 +651,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	block2endsText.setString(blockString);
 	block2endsText.setCharacterSize(27);
 	block2endsText.setFillColor(sf::Color(80, 48, 32));
-	block2endsText.setPosition(965.f, 377.f);
+	block2endsText.setPosition(975.f, 382.f);
 
 	sf::Clock clock;
 
@@ -899,7 +899,6 @@ int modeChoosing(sf::RenderWindow& window) {
 }
 
 
-
 void GotoXY(int x, int y) {
 	COORD coord;
 	coord.X = x;
@@ -989,13 +988,13 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	oSprite.setScale(oScale, oScale);
 
 	// Setup frames cho stats
-	float frameScale = 3.5f;
+	float frameScale = 3.8f;
 	frameX_S.setScale(frameScale, frameScale);
 	frameO_S.setScale(frameScale, frameScale);
 
 	// Vị trí frames
-	float frameLeftX = boardX + 30.0f;
-	float frameRightX = 200.0f;  // Vị trí cố định bên phải bảng cờ
+	float frameLeftX = boardX + 10.0f;
+	float frameRightX = 120.0f;  // Vị trí cố định bên phải bảng cờ
 	float frameY = boardY + 80.0f;
 
 	frameX_S.setPosition(frameLeftX, frameY);
@@ -1146,11 +1145,21 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 			message = "NGUOI CHOI X THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
 			gameInfo.setPosition(550.0f, 34.0f);
+
+			// Hiệu ứng O thua
+			sf::Sprite overlay = frameO_S; // Copy toàn bộ texture, scale, position của frameO
+			overlay.setColor(sf::Color(0, 0, 0, 180)); // Màu đen (0,0,0) với độ trong suốt (alpha) 180
+			window.draw(overlay);
 		}
 		else if (result == 1) {
 			message = "NGUOI CHOI O THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
 			gameInfo.setPosition(550.0f, 34.0f);
+
+			// Hiệu ứng X thua
+			sf::Sprite overlay = frameX_S; // Copy toàn bộ texture, scale, position của frameX
+			overlay.setColor(sf::Color(0, 0, 0, 180)); // Màu đen (0,0,0) với độ trong suốt (alpha) 180
+			window.draw(overlay);
 		}
 		else if (result == 0) {
 			message = "HOA!";
@@ -1187,14 +1196,14 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesXText.setCharacterSize(24);
 		movesXText.setFillColor(textColor);
 		movesXText.setString("So luot: " + std::to_string(_movesX));
-		movesXText.setPosition(textAreaX + 10.0f, textAreaY + 40.0f);
+		movesXText.setPosition(textAreaX + 15.0f, textAreaY + 50.0f);
 
 		sf::Text winsXText;
 		winsXText.setFont(font);
 		winsXText.setCharacterSize(24);
 		winsXText.setFillColor(textColor);
 		winsXText.setString("So thang: " + std::to_string(_winsX));
-		winsXText.setPosition(textAreaX + 10.0f, textAreaY + 75.0f);
+		winsXText.setPosition(textAreaX + 15.0f, textAreaY + 85.0f);
 
 		window.draw(titleX);
 		window.draw(movesXText);
@@ -1220,14 +1229,14 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesOText.setCharacterSize(24);
 		movesOText.setFillColor(textColor);
 		movesOText.setString("So luot: " + std::to_string(_movesO));
-		movesOText.setPosition(textAreaOX + 10.0f, textAreaOY + 40.0f);
+		movesOText.setPosition(textAreaOX + 85.0f, textAreaOY + 50.0f);
 
 		sf::Text winsOText;
 		winsOText.setFont(font);
 		winsOText.setCharacterSize(24);
 		winsOText.setFillColor(textColor);
 		winsOText.setString("So thang: " + std::to_string(_winsO));
-		winsOText.setPosition(textAreaOX + 10.0f, textAreaOY + 75.0f);
+		winsOText.setPosition(textAreaOX + 85.0f, textAreaOY + 85.0f);
 
 		window.draw(titleO);
 		window.draw(movesOText);

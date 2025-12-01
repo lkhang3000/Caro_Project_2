@@ -29,18 +29,15 @@ main_menu:
                 std::cerr << "Không thể tải font!\n";
             }
 
-            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT, backOnT, backOffT;
+            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT;
             if (!settingOffT.loadFromFile("Assets/button/setting2_button_off.png")) {}
             if (!settingOnT.loadFromFile("Assets/button/setting2_button_on.png")) {}
             if (!pauseOffT.loadFromFile("Assets/button/pause_button_off.png")) {}
             if (!pauseOnT.loadFromFile("Assets/button/pause_button_on.png")) {}
             if (!playOnT.loadFromFile("Assets/button/play_button_on.png")) {}
-            if (!backOnT.loadFromFile("Assets/button/exit.png")) {}
-            if (!backOffT.loadFromFile("Assets/button/exit_dark.png")) {}
 
             sf::Sprite settingButton(settingOffT);
             sf::Sprite pauseButton(pauseOffT);
-            sf::Sprite backButton(backOffT);
 
             
             float buttonScale = 4.26875f - 1.5;
@@ -58,11 +55,9 @@ main_menu:
 
             settingButton.setScale(buttonScale, buttonScale);
             pauseButton.setScale(buttonScale, buttonScale);
-            backButton.setScale(buttonScale, buttonScale);
 
             settingButton.setPosition(settingX, settingY);
             pauseButton.setPosition(pauseX, pauseY);
-            backButton.setPosition(10.f, 10.f);
             
             if (!isLoaded) {
                 StartGame();
@@ -70,7 +65,7 @@ main_menu:
             int result = TestBoard(rule);
             if (isLoaded && result != 2) result = 2; 
 
-            enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED, BACK_FOCUSED };
+            enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED };
             GameState gameState = BOARD_ACTIVE;
             bool isPaused = false;
 
@@ -114,18 +109,15 @@ main_menu:
                             if (gameState == BOARD_ACTIVE) MoveLeft();
                             else if (gameState == PAUSE_FOCUSED) gameState = BOARD_ACTIVE;
                             else if (gameState == SETTING_FOCUSED) gameState = PAUSE_FOCUSED;
-                            else if (gameState == PAUSE_FOCUSED) gameState = BACK_FOCUSED;
                             break;
                         case sf::Keyboard::D:
                             if (gameState == BOARD_ACTIVE) MoveRight();
-                            else if (gameState == BACK_FOCUSED) gameState = PAUSE_FOCUSED;
                             else if (gameState == PAUSE_FOCUSED) gameState = SETTING_FOCUSED;
                             break;
                         case sf::Keyboard::W:
                             if (gameState == BOARD_ACTIVE) {
                                 if (_currentRow == 0) {
-                                    if (_currentCol < BOARD_SIZE / 2) gameState = BACK_FOCUSED;
-                                    else gameState = PAUSE_FOCUSED;
+                                    gameState = PAUSE_FOCUSED;
                                 }
                                 else MoveUp();
                             }
@@ -144,9 +136,6 @@ main_menu:
                                     else if (result == 1) ++_winsO;
                                     _TURN = !_TURN;
                                 }
-                            }
-                            else if (gameState == BACK_FOCUSED) {
-                                return; // Về menu
                             }
                             else if (gameState == SETTING_FOCUSED) {
                                 handleSettings(window, font);
@@ -186,27 +175,18 @@ main_menu:
                 
                 settingButton.setTexture(settingOffT);
                 pauseButton.setTexture(pauseOffT);
-                backButton.setTexture(backOffT);
 
                 if (gameState == SETTING_FOCUSED) {
                     settingButton.setTexture(settingOnT);
                     pauseButton.setTexture(pauseOffT);
-                    backButton.setTexture(backOffT);
                 }
                 else if (gameState == PAUSE_FOCUSED) {
                     pauseButton.setTexture(pauseOnT);
-                    settingButton.setTexture(settingOffT);
-                    backButton.setTexture(backOffT);
-                }
-                else if (gameState == BACK_FOCUSED) {
-                    backButton.setTexture(backOnT);
-                    pauseButton.setTexture(pauseOffT);
                     settingButton.setTexture(settingOffT);
                 }
 
                 window.draw(settingButton);
                 window.draw(pauseButton);
-                window.draw(backButton);
                 window.display();
             }
             };
