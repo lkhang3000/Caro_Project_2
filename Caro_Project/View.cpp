@@ -964,9 +964,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	continueGameS.setTexture(continueGameT);
 	continueGameONS.setTexture(continueGameONT);
 
-	XloseS.setPosition(-50.0f, 600.0f);
-	loseBeforeS.setPosition(-50.0f, 600.0f);
-
 	// Size bàn cờ
 	float boardScale = 3.5f;
 	boardS.setScale(boardScale, boardScale);
@@ -1220,6 +1217,9 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 			float centerX = boardBounds.left + boardBounds.width / 2.f;
 			float centerY = boardBounds.top + boardBounds.height / 2.f;
 
+			// <<< ADDED: vertical offset for overlays (positive = move down) >>>
+			const float overlayYOffset = 80.0f;
+
 			sf::Sprite* chosen = nullptr;
 			if (t < scaleDuration) {
 				if (animResult == -1 || animResult == 1) {
@@ -1261,7 +1261,8 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 				}
 
 				chosen->setOrigin(chosen->getTexture()->getSize().x / 2.f, chosen->getTexture()->getSize().y / 2.f);
-				chosen->setPosition(centerX, centerY - 20.0f);
+				// moved down by overlayYOffset (was centerY - 20.0f)
+				chosen->setPosition(centerX - 15.0f, centerY + overlayYOffset);
 				chosen->setScale(baseScale * scaleFactor, baseScale * scaleFactor);
 				chosen->setColor(sf::Color(255, 255, 255, 255));
 
