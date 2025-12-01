@@ -530,9 +530,9 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite card2F(card2Front);
 	sf::Sprite card2B(card2Back);
 	sf::Sprite card2U(card2BG);
-	sf::Sprite card3F(card3Front);
-	sf::Sprite card3B(card3Back);
-	sf::Sprite card3U(card3BG);
+	sf:: Sprite card3F(card3Front);
+	sf:: Sprite card3B(card3Back);
+	sf:: Sprite card3U(card3BG);
 
 	sf::Sprite okButtonS(okButton);
 	sf::Sprite okButton_Dark(okButtonDark);
@@ -906,9 +906,10 @@ void GotoXY(int x, int y) {
 	coord.Y = y;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
+
 void DrawBoard(sf::RenderWindow& window, int n, int result) {
-	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T;
-	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S;
+	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T, winBeforeT, XwinT, OwinT, XloseT, loseBeforeT;
+	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S, winBeforeS, XwinS, OwinS, XloseS, loseBeforeS;
 
 	board1T.loadFromFile("Assets/playing/board.png");
 	board3T.loadFromFile("Assets/playing/board_renju.png");
@@ -918,6 +919,18 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	barT.loadFromFile("Assets/background/text_board.png");
 	frameX_T.loadFromFile("Assets/playing/frameX.png");
 	frameO_T.loadFromFile("Assets/playing/frameO.png");
+	winBeforeT.loadFromFile("Assets/playing/winBefore.png");
+	XwinT.loadFromFile("Assets/playing/winAfter_X.png");
+	OwinT.loadFromFile("Assets/playing/winAfter_O.png");
+	XloseT.loadFromFile("Assets/playing/loseAfter.png");
+	loseBeforeT.loadFromFile("Assets/playing/loseBefore.png");
+
+	// assign textures to sprites for win/lose overlays
+	if (winBeforeT.getSize().x > 0) winBeforeS.setTexture(winBeforeT);
+	if (XwinT.getSize().x > 0) XwinS.setTexture(XwinT);
+	if (OwinT.getSize().x > 0) OwinS.setTexture(OwinT);
+	if (XloseT.getSize().x > 0) XloseS.setTexture(XloseT);
+	if (loseBeforeT.getSize().x > 0) loseBeforeS.setTexture(loseBeforeT);
 
 	string bgPath = "Assets/background/board_background" + to_string(_backgroundBoard) + ".png";
 	bgTexture.loadFromFile(bgPath);
@@ -1027,6 +1040,96 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	window.draw(frameX_S);
 	window.draw(frameO_S);
 
+	// --- Win/Lose overlay: show once, scale-up "open", then disappear after 4s (no fade) ---
+	static int animResult = 999;           // result currently being animated (999 = none)
+	static sf::Clock animClock;            // clock for current animation
+	static bool animShownForResult = false;// ensure it shows only once per terminal result
+
+	const float scaleDuration = 0.6f;     // seconds to scale up (open)
+	const float totalDuration = 4.0f;     // total seconds overlay stays visible
+	const float minScaleFactor = 0.25f;   // start scale factor relative to final computed sprite scale
+	bool isTerminal = (result == -1 || result == 1 || result == 0);
+
+	// start animation only once when terminal result first appears
+	if (isTerminal) {
+		if ((animResult != result) || (!animShownForResult && animResult == 999)) {
+			animResult = result;
+			animClock.restart();
+			animShownForResult = false;
+		}
+	}
+	else {
+		// reset when game is not in terminal state so next finish can show again
+		animResult = 999;
+		animShownForResult = false;
+	}
+
+	// draw overlay while animation active and not already finished
+	if (animResult != 999 && !animShownForResult) {
+		float t = animClock.getElapsedTime().asSeconds();
+
+		if (t >= totalDuration) {
+			// finished showing once -> mark shown and stop drawing
+			animShownForResult = true;
+		}
+		else {
+			// compute center of board area to anchor overlay
+			sf::FloatRect boardBounds = boardS.getGlobalBounds();
+			float centerX = boardBounds.left + boardBounds.width / 2.f;
+			float centerY = boardBounds.top + boardBounds.height / 2.f;
+
+			// choose which sprite to display (before during scale, after afterwards)
+			sf::Sprite* chosen = nullptr;
+			if (t < scaleDuration) {
+				// during scale-up show "before" image
+				if (animResult == -1 || animResult == 1) {
+					if (winBeforeT.getSize().x > 0) chosen = &winBeforeS;
+				}
+				else {
+					if (loseBeforeT.getSize().x > 0) chosen = &loseBeforeS;
+				}
+			}
+			else {
+				// after scale-up show final "after" image
+				if (animResult == -1) {
+					if (XwinT.getSize().x > 0) chosen = &XwinS;
+				}
+				else if (animResult == 1) {
+					if (OwinT.getSize().x > 0) chosen = &OwinS;
+				}
+				else {
+					if (XloseT.getSize().x > 0) chosen = &XloseS;
+				}
+			}
+
+			if (chosen && chosen->getTexture()) {
+				// compute base scale so sprite width ~ 70% of board width
+				float baseTargetWidth = boardBounds.width * 0.7f;
+				float baseScale = baseTargetWidth / static_cast<float>(chosen->getTexture()->getSize().x);
+
+				// current scale factor: interpolate from minScaleFactor to 1.0 over scaleDuration
+				float scaleFactor = 1.0f;
+				if (t < scaleDuration) {
+					float p = t / scaleDuration;
+					// smooth ease-out for nicer opening (quadratic)
+					float ease = 1.0f - (1.0f - p) * (1.0f - p);
+					scaleFactor = minScaleFactor + (1.0f - minScaleFactor) * ease;
+				}
+				else {
+					scaleFactor = 1.0f;
+				}
+
+				// apply scaling and center
+				chosen->setOrigin(chosen->getTexture()->getSize().x / 2.f, chosen->getTexture()->getSize().y / 2.f);
+				chosen->setPosition(centerX, centerY - 60.0f); // slightly above center
+				chosen->setScale(baseScale * scaleFactor, baseScale * scaleFactor);
+				chosen->setColor(sf::Color(255, 255, 255, 255)); // fully opaque
+
+				window.draw(*chosen);
+			}
+		}
+	}
+
 	// Thông tin game
 	window.draw(barS);
 	sf::Font font;
@@ -1064,11 +1167,11 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		gameInfo.setString(message);
 		window.draw(gameInfo);
 
-		
+
 		sf::Color textColor(54, 39, 32);
 
 		float textAreaX = frameLeftX + 80.0f;
-		float textAreaY = frameY + 180.0f;  
+		float textAreaY = frameY + 180.0f;
 
 		// Text "X" 
 		sf::Text titleX;
@@ -1131,7 +1234,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		window.draw(winsOText);
 	}
 }
-
+	
 
 int ProcessFinish(int pWhoWin) {
 	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);

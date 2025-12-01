@@ -6,8 +6,12 @@
 void StartGame() {
     system("cls");
     ResetData();
-    _currentRow = 0;  // Reset vị trí cursor
+    _currentRow = 0;  
     _currentCol = 0;
+    _movesX = 0;
+    _movesO = 0;
+    _winsX = 0;   
+    _winsO = 0;  
 }
 
 void ExitGame() {
