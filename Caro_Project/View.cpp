@@ -542,12 +542,12 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite setting_Dark(settingButtonDark);
 
 
-	float card1CenterX = 290.0f;
-	float card1CenterY = 385.0f;
-	float card2CenterX = 675.0f;
-	float card2CenterY = 385.0f;
-	float card3CenterX = 1110.0f;
-	float card3CenterY = 385.0f;
+	float card1CenterX = 270.0f;
+	float card1CenterY = 380.0f;
+	float card2CenterX = 660.0f;
+	float card2CenterY = 380.0f;
+	float card3CenterX = 1100.0f;
+	float card3CenterY = 380.0f;
 
 	//Set origin và position
 	//Card 1
@@ -580,10 +580,10 @@ int modeChoosing(sf::RenderWindow& window) {
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
 	// Back button
-	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
-	backButton_Dark.setScale(scaleX + 0.05f, scaleY + 0.05f);
-	backButtonS.setPosition(40.0f, - 40.0f);
-	backButton_Dark.setPosition(40.0f, - 40.0f);
+	backButtonS.setScale(scaleX - 1.5f, scaleY - 1.5f);
+	backButton_Dark.setScale(scaleX - 1.5f, scaleY - 1.5f);
+	backButtonS.setPosition(-830.0f, 10.0f);
+	backButton_Dark.setPosition(-830.0f, 10.0f);
 
 	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
 	setting_Dark.setScale(scaleX - 1.3f, scaleY - 1.3f);
@@ -620,7 +620,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	freestylesText.setString(freestyleString);
 	freestylesText.setCharacterSize(27);
 	freestylesText.setFillColor(sf::Color(80, 48, 32));
-	freestylesText.setPosition(140.f, 385.f);
+	freestylesText.setPosition(120.f, 380.f);
 
 	// Card 2: Tiêu chuẩn
 	sf::Text standardText;
@@ -635,7 +635,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	standardText.setString(standardString);
 	standardText.setCharacterSize(27);
 	standardText.setFillColor(sf::Color(80, 48, 32));
-	standardText.setPosition(542.f, 385.f);
+	standardText.setPosition(527.f, 380.f);
 
 	// Card 3: Chặn 2 đầu
 	sf::Text block2endsText;
@@ -651,7 +651,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	block2endsText.setString(blockString);
 	block2endsText.setCharacterSize(27);
 	block2endsText.setFillColor(sf::Color(80, 48, 32));
-	block2endsText.setPosition(975.f, 382.f);
+	block2endsText.setPosition(965.f, 377.f);
 
 	sf::Clock clock;
 
@@ -928,8 +928,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	continueGameT.loadFromFile("Assets/button/continue_game.png");
 	continueGameONT.loadFromFile("Assets/button/continue_game_on.png");
 
-
-
 	// assign textures to sprites for win/lose overlays
 	if (winBeforeT.getSize().x > 0) winBeforeS.setTexture(winBeforeT);
 	if (XwinT.getSize().x > 0) XwinS.setTexture(XwinT);
@@ -998,13 +996,13 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	oSprite.setScale(oScale, oScale);
 
 	// Setup frames cho stats
-	float frameScale = 3.8f;
+	float frameScale = 3.5f;
 	frameX_S.setScale(frameScale, frameScale);
 	frameO_S.setScale(frameScale, frameScale);
 
 	// Vị trí frames
 	float frameLeftX = boardX + 30.0f;
-	float frameRightX = 200.0f;  // Vị trí cố định bên phải bảng cờ
+	float frameRightX = 200.0f;
 	float frameY = boardY + 80.0f;
 
 	frameX_S.setPosition(frameLeftX, frameY);
@@ -1053,39 +1051,26 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	window.draw(barS);
 	sf::Font font;
 	if (font.loadFromFile("Assets/font/regular.ttf")) {
-		// Thông báo chính
-		sf::Text gameInfo;
-		gameInfo.setFont(font);
-		gameInfo.setCharacterSize(26);
-		gameInfo.setStyle(sf::Text::Bold);
+		// ĐÃ XÓA PHẦN gameInfo TEXT (nút x)
 
-		std::string message;
+		// HIỆU ỨNG BÔI ĐEN CHỈ HIỆN KHI GAME KẾT THÚC
+		bool isTerminal = (result == -1 || result == 1 || result == 0);
 
-		if (result == -1) {
-			message = "NGUOI CHOI X THANG!";
-			gameInfo.setFillColor(sf::Color(54, 39, 32));
-			gameInfo.setPosition(550.0f, 34.0f);
-		}
-		else if (result == 1) {
-			message = "NGUOI CHOI O THANG!";
-			gameInfo.setFillColor(sf::Color(54, 39, 32));
-			gameInfo.setPosition(550.0f, 34.0f);
-		}
-		else if (result == 0) {
-			message = "HOA!";
-			gameInfo.setFillColor(sf::Color(54, 39, 32));
-			gameInfo.setPosition(650.0f, 34.0f);
-		}
-		else {
-			std::string playerText = _TURN ? "X" : "O";
-			message = "Luot choi: " + playerText;
-			gameInfo.setFillColor(sf::Color(54, 39, 32));
-			gameInfo.setPosition(590.0f, 34.0f);
-		}
+		if (isTerminal) {
+			// Nếu O thua (X thắng hoặc hòa)
+			if (result == -1 || result == 0) {
+				sf::Sprite overlayO = frameO_S;
+				overlayO.setColor(sf::Color(0, 0, 0, 180));
+				window.draw(overlayO);
+			}
 
-		gameInfo.setString(message);
-		window.draw(gameInfo);
-
+			// Nếu X thua (O thắng hoặc hòa)
+			if (result == 1 || result == 0) {
+				sf::Sprite overlayX = frameX_S;
+				overlayX.setColor(sf::Color(0, 0, 0, 180));
+				window.draw(overlayX);
+			}
+		}
 
 		sf::Color textColor(54, 39, 32);
 
@@ -1113,15 +1098,13 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		winsXText.setCharacterSize(24);
 		winsXText.setFillColor(textColor);
 		winsXText.setString("So thang: " + std::to_string(_winsX));
-		winsXText.setPosition(textAreaX + 15.0f, textAreaY + 85.0f);
+		winsXText.setPosition(textAreaX + 10.0f, textAreaY + 75.0f);
 
 		window.draw(titleX);
 		window.draw(movesXText);
 		window.draw(winsXText);
 
 		// Stats cho O
-
-		// Tính vị trí của khung trắng trong frame O
 		float textAreaOX = frameRightX + 880.0f;
 		float textAreaOY = frameY + 180.0f;
 
@@ -1139,14 +1122,14 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesOText.setCharacterSize(24);
 		movesOText.setFillColor(textColor);
 		movesOText.setString("So luot: " + std::to_string(_movesO));
-		movesOText.setPosition(textAreaOX + 85.0f, textAreaOY + 50.0f);
+		movesOText.setPosition(textAreaOX + 10.0f, textAreaOY + 40.0f);
 
 		sf::Text winsOText;
 		winsOText.setFont(font);
 		winsOText.setCharacterSize(24);
 		winsOText.setFillColor(textColor);
 		winsOText.setString("So thang: " + std::to_string(_winsO));
-		winsOText.setPosition(textAreaOX + 85.0f, textAreaOY + 85.0f);
+		winsOText.setPosition(textAreaOX + 10.0f, textAreaOY + 75.0f);
 
 		window.draw(titleO);
 		window.draw(movesOText);
@@ -1157,36 +1140,43 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	static int animResult = 999;
 	static sf::Clock animClock;
 	static bool animShownForResult = false;
+	static int buttonChoice = 0;
 
 	const float scaleDuration = 0.4f;
 	const float totalDuration = 4.5f;
 	const float minScaleFactor = 0.05f;
 	bool isTerminal = (result == -1 || result == 1 || result == 0);
+
 	if (isTerminal) {
 		continueGameS.setScale(barScale, barScale);
 		continueGameS.setPosition(barX - 370.0f, barY - 196.0f);
 		outGameS.setScale(barScale, barScale);
 		outGameS.setPosition(barX + 90.0f, barY - 225.0f);
 
-		static int buttonChoice = 0; // 0: Continue, 1: Exit
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-			buttonChoice = 0; //Continue
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-			buttonChoice = 1; //Exit
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-			return buttonChoice; 
+		// CHỈ cho phép chọn nút SAU KHI animation xong
+		if (animShownForResult) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+				buttonChoice = 0;
+			}
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+				buttonChoice = 1;
+			}
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+				int returnValue = buttonChoice;
+				animResult = 999;
+				animShownForResult = false;
+				buttonChoice = 0;
+				return returnValue;
+			}
 		}
 
 		if (buttonChoice == 0) {
-			continueGameS.setTexture(continueGameONT); // ON for Continue
-			outGameS.setTexture(outGameT); // OFF for Exit
+			continueGameS.setTexture(continueGameONT);
+			outGameS.setTexture(outGameT);
 		}
 		else {
-			continueGameS.setTexture(continueGameT); // OFF for Continue
-			outGameS.setTexture(outGameONT); // ON for Exit
+			continueGameS.setTexture(continueGameT);
+			outGameS.setTexture(outGameONT);
 		}
 
 		window.draw(continueGameS);
@@ -1268,7 +1258,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 	return -1;
 }
-	
 
 int ProcessFinish(int pWhoWin) {
 	GotoXY(0, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);

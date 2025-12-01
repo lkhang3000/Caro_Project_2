@@ -29,7 +29,7 @@ main_menu:
                 std::cerr << "Không thể tải font!\n";
             }
 
-            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT;
+            sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT, backOnT, backOffT;
             if (!settingOffT.loadFromFile("Assets/button/setting2_button_off.png")) {}
             if (!settingOnT.loadFromFile("Assets/button/setting2_button_on.png")) {}
             if (!pauseOffT.loadFromFile("Assets/button/pause_button_off.png")) {}
@@ -93,13 +93,11 @@ main_menu:
                     if (event.type == sf::Event::KeyPressed) {
                         if (_isPvE && !_TURN && result == 2) continue;
 
+                        // Xử lý input khi game kết thúc
                         if (result != 2) {
-
-                            if (result != 2) {
-                                if (event.key.code == sf::Keyboard::Escape) return;
-                                continue;
-                            }
-
+                            if (event.key.code == sf::Keyboard::Escape) return;
+                            // Không xử lý phím khác khi game đã kết thúc
+                            continue;
                         }
 
                         if (isPaused) continue;
@@ -137,6 +135,7 @@ main_menu:
                                     _TURN = !_TURN;
                                 }
                             }
+                         
                             else if (gameState == SETTING_FOCUSED) {
                                 handleSettings(window, font);
                                 gameState = BOARD_ACTIVE;
@@ -196,7 +195,7 @@ main_menu:
                     pauseButton.setTexture(pauseOnT);
                     settingButton.setTexture(settingOffT);
                 }
-
+               
                 window.draw(settingButton);
                 window.draw(pauseButton);
                 window.display();
