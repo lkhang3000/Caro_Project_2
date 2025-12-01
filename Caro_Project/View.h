@@ -34,5 +34,4 @@ int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& g
 std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView, std::string initialText = "");
 #endif
 
-// Console versions
 

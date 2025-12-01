@@ -530,9 +530,9 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite card2F(card2Front);
 	sf::Sprite card2B(card2Back);
 	sf::Sprite card2U(card2BG);
-	sf:: Sprite card3F(card3Front);
-	sf:: Sprite card3B(card3Back);
-	sf:: Sprite card3U(card3BG);
+	sf::Sprite card3F(card3Front);
+	sf::Sprite card3B(card3Back);
+	sf::Sprite card3U(card3BG);
 
 	sf::Sprite okButtonS(okButton);
 	sf::Sprite okButton_Dark(okButtonDark);
@@ -542,12 +542,12 @@ int modeChoosing(sf::RenderWindow& window) {
 	sf::Sprite setting_Dark(settingButtonDark);
 
 
-	float card1CenterX = 270.0f;
-	float card1CenterY = 380.0f;
-	float card2CenterX = 660.0f;
-	float card2CenterY = 380.0f;
-	float card3CenterX = 1100.0f;
-	float card3CenterY = 380.0f;
+	float card1CenterX = 290.0f;
+	float card1CenterY = 385.0f;
+	float card2CenterX = 675.0f;
+	float card2CenterY = 385.0f;
+	float card3CenterX = 1110.0f;
+	float card3CenterY = 385.0f;
 
 	//Set origin và position
 	//Card 1
@@ -580,10 +580,10 @@ int modeChoosing(sf::RenderWindow& window) {
 	okButton_Dark.setScale(okButtonScale, okButtonScale);
 
 	// Back button
-	backButtonS.setScale(scaleX - 1.5f, scaleY - 1.5f);
-	backButton_Dark.setScale(scaleX - 1.5f, scaleY - 1.5f);
-	backButtonS.setPosition(-830.0f, 10.0f);
-	backButton_Dark.setPosition(-830.0f, 10.0f);
+	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButton_Dark.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonS.setPosition(40.0f, -40.0f);
+	backButton_Dark.setPosition(40.0f, -40.0f);
 
 	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
 	setting_Dark.setScale(scaleX - 1.3f, scaleY - 1.3f);
@@ -620,7 +620,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	freestylesText.setString(freestyleString);
 	freestylesText.setCharacterSize(27);
 	freestylesText.setFillColor(sf::Color(80, 48, 32));
-	freestylesText.setPosition(120.f, 380.f);
+	freestylesText.setPosition(140.f, 385.f);
 
 	// Card 2: Tiêu chuẩn
 	sf::Text standardText;
@@ -635,7 +635,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	standardText.setString(standardString);
 	standardText.setCharacterSize(27);
 	standardText.setFillColor(sf::Color(80, 48, 32));
-	standardText.setPosition(527.f, 380.f);
+	standardText.setPosition(542.f, 385.f);
 
 	// Card 3: Chặn 2 đầu
 	sf::Text block2endsText;
@@ -651,8 +651,7 @@ int modeChoosing(sf::RenderWindow& window) {
 	block2endsText.setString(blockString);
 	block2endsText.setCharacterSize(27);
 	block2endsText.setFillColor(sf::Color(80, 48, 32));
-	block2endsText.setPosition(965.f, 377.f);
-
+	block2endsText.setPosition(975.f, 382.f);
 	sf::Clock clock;
 
 	while (window.isOpen()) {
@@ -676,18 +675,18 @@ int modeChoosing(sf::RenderWindow& window) {
 						// Điều hướng hàng trên: A chuyển về nút Back (0)
 						topChoice = 0;
 					}
-					break;
+					   break;
 
 				case sf::Keyboard::D:
-					if (row == 1) {
-						cardChoice++;
-						if (cardChoice > 3) cardChoice = 1;
-					}
-					else if (row == 0) {
-						// Điều hướng hàng trên: D chuyển sang nút Setting (1)
-						topChoice = 1;
-					}
-					break;
+					   if (row == 1) {
+						   cardChoice++;
+						   if (cardChoice > 3) cardChoice = 1;
+					   }
+					   else if (row == 0) {
+						   // Điều hướng hàng trên: D chuyển sang nút Setting (1)
+						   topChoice = 1;
+					   }
+					   break;
 
 				case sf::Keyboard::W:
 					if (row == 2) { // Từ OK lên Card
@@ -898,7 +897,6 @@ int modeChoosing(sf::RenderWindow& window) {
 	return -1;
 }
 
-
 void GotoXY(int x, int y) {
 	COORD coord;
 	coord.X = x;
@@ -966,6 +964,9 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	continueGameS.setTexture(continueGameT);
 	continueGameONS.setTexture(continueGameONT);
 
+	XloseS.setPosition(-50.0f, 600.0f);
+	loseBeforeS.setPosition(-50.0f, 600.0f);
+
 	// Size bàn cờ
 	float boardScale = 3.5f;
 	boardS.setScale(boardScale, boardScale);
@@ -996,13 +997,13 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	oSprite.setScale(oScale, oScale);
 
 	// Setup frames cho stats
-	float frameScale = 3.5f;
+	float frameScale = 3.8f;
 	frameX_S.setScale(frameScale, frameScale);
 	frameO_S.setScale(frameScale, frameScale);
 
 	// Vị trí frames
-	float frameLeftX = boardX + 30.0f;
-	float frameRightX = 200.0f;
+	float frameLeftX = boardX + 10.0f;
+	float frameRightX = 120.0f;
 	float frameY = boardY + 80.0f;
 
 	frameX_S.setPosition(frameLeftX, frameY);
@@ -1051,26 +1052,39 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	window.draw(barS);
 	sf::Font font;
 	if (font.loadFromFile("Assets/font/regular.ttf")) {
-		// ĐÃ XÓA PHẦN gameInfo TEXT (nút x)
 
-		// HIỆU ỨNG BÔI ĐEN CHỈ HIỆN KHI GAME KẾT THÚC
 		bool isTerminal = (result == -1 || result == 1 || result == 0);
+		sf::Text gameInfo;
+		gameInfo.setFont(font);
+		gameInfo.setCharacterSize(26);
+		gameInfo.setStyle(sf::Text::Bold);
+
+		std::string message;
 
 		if (isTerminal) {
-			// Nếu O thua (X thắng hoặc hòa)
+			// Nếu O thua
 			if (result == -1 || result == 0) {
 				sf::Sprite overlayO = frameO_S;
 				overlayO.setColor(sf::Color(0, 0, 0, 180));
 				window.draw(overlayO);
 			}
 
-			// Nếu X thua (O thắng hoặc hòa)
+			// Nếu X thua 
 			if (result == 1 || result == 0) {
 				sf::Sprite overlayX = frameX_S;
 				overlayX.setColor(sf::Color(0, 0, 0, 180));
 				window.draw(overlayX);
 			}
 		}
+		else {
+			std::string playerText = _TURN ? "X" : "O";
+			message = "Luot choi: " + playerText;
+			gameInfo.setFillColor(sf::Color(54, 39, 32));
+			gameInfo.setPosition(590.0f, 34.0f);
+		}
+
+		gameInfo.setString(message);
+		window.draw(gameInfo);
 
 		sf::Color textColor(54, 39, 32);
 
@@ -1091,14 +1105,14 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesXText.setCharacterSize(24);
 		movesXText.setFillColor(textColor);
 		movesXText.setString("So luot: " + std::to_string(_movesX));
-		movesXText.setPosition(textAreaX + 10.0f, textAreaY + 40.0f);
+		movesXText.setPosition(textAreaX + 15.0f, textAreaY + 50.0f);
 
 		sf::Text winsXText;
 		winsXText.setFont(font);
 		winsXText.setCharacterSize(24);
 		winsXText.setFillColor(textColor);
 		winsXText.setString("So thang: " + std::to_string(_winsX));
-		winsXText.setPosition(textAreaX + 10.0f, textAreaY + 75.0f);
+		winsXText.setPosition(textAreaX + 15.0f, textAreaY + 85.0f);
 
 		window.draw(titleX);
 		window.draw(movesXText);
@@ -1122,14 +1136,14 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesOText.setCharacterSize(24);
 		movesOText.setFillColor(textColor);
 		movesOText.setString("So luot: " + std::to_string(_movesO));
-		movesOText.setPosition(textAreaOX + 10.0f, textAreaOY + 40.0f);
+		movesOText.setPosition(textAreaOX + 85.0f, textAreaOY + 50.0f);
 
 		sf::Text winsOText;
 		winsOText.setFont(font);
 		winsOText.setCharacterSize(24);
 		winsOText.setFillColor(textColor);
 		winsOText.setString("So thang: " + std::to_string(_winsO));
-		winsOText.setPosition(textAreaOX + 10.0f, textAreaOY + 75.0f);
+		winsOText.setPosition(textAreaOX + 85.0f, textAreaOY + 85.0f);
 
 		window.draw(titleO);
 		window.draw(movesOText);
