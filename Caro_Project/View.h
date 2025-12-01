@@ -15,7 +15,7 @@ const int BOARD_TOP = 1;
 using namespace std;
 void GotoXY(int x, int y);
 void FixConsoleWindow();
-void DrawBoard(sf::RenderWindow& window, int n, int result = 2);
+int DrawBoard(sf::RenderWindow& window, int n, int result = 2);
 int mainScreen(sf::RenderWindow& window);
 int AskContinue();
 int ProcessFinish(int pWhoWin);
@@ -28,7 +28,6 @@ int opponentChoosing(sf::RenderWindow& window);
 //Load game
 int loadGameScreen(sf::RenderWindow& window);
 //Save game
-// Trong View.h
 // Trong View.h
 int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue = true);
 int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView);

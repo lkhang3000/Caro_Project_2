@@ -906,9 +906,9 @@ void GotoXY(int x, int y) {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void DrawBoard(sf::RenderWindow& window, int n, int result) {
-	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T, winBeforeT, XwinT, OwinT, XloseT, loseBeforeT;
-	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S, winBeforeS, XwinS, OwinS, XloseS, loseBeforeS;
+int DrawBoard(sf::RenderWindow& window, int n, int result) {
+	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T, winBeforeT, XwinT, OwinT, XloseT, loseBeforeT, outGameT, outGameONT, continueGameT, continueGameONT;
+	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S, winBeforeS, XwinS, OwinS, XloseS, loseBeforeS, outGameS, outGameONS, continueGameS, continueGameONS;
 
 	board1T.loadFromFile("Assets/playing/board.png");
 	board3T.loadFromFile("Assets/playing/board_renju.png");
@@ -923,6 +923,12 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	OwinT.loadFromFile("Assets/playing/winAfter_O.png");
 	XloseT.loadFromFile("Assets/playing/loseAfter.png");
 	loseBeforeT.loadFromFile("Assets/playing/loseBefore.png");
+	outGameT.loadFromFile("Assets/button/exit_game.png");
+	outGameONT.loadFromFile("Assets/button/exit_game_on.png");
+	continueGameT.loadFromFile("Assets/button/continue_game.png");
+	continueGameONT.loadFromFile("Assets/button/continue_game_on.png");
+
+
 
 	// assign textures to sprites for win/lose overlays
 	if (winBeforeT.getSize().x > 0) winBeforeS.setTexture(winBeforeT);
@@ -957,6 +963,10 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	barS.setTexture(barT);
 	frameX_S.setTexture(frameX_T);
 	frameO_S.setTexture(frameO_T);
+	outGameS.setTexture(outGameT);
+	outGameONS.setTexture(outGameONT);
+	continueGameS.setTexture(continueGameT);
+	continueGameONS.setTexture(continueGameONT);
 
 	// Size bàn cờ
 	float boardScale = 3.5f;
@@ -993,8 +1003,8 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	frameO_S.setScale(frameScale, frameScale);
 
 	// Vị trí frames
-	float frameLeftX = boardX + 10.0f;
-	float frameRightX = 120.0f;  // Vị trí cố định bên phải bảng cờ
+	float frameLeftX = boardX + 30.0f;
+	float frameRightX = 200.0f;  // Vị trí cố định bên phải bảng cờ
 	float frameY = boardY + 80.0f;
 
 	frameX_S.setPosition(frameLeftX, frameY);
@@ -1039,96 +1049,6 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 	window.draw(frameX_S);
 	window.draw(frameO_S);
 
-	// --- Win/Lose overlay: show once, scale-up "open", then disappear after 4s (no fade) ---
-	static int animResult = 999;           // result currently being animated (999 = none)
-	static sf::Clock animClock;            // clock for current animation
-	static bool animShownForResult = false;// ensure it shows only once per terminal result
-
-	const float scaleDuration = 0.6f;     // seconds to scale up (open)
-	const float totalDuration = 4.0f;     // total seconds overlay stays visible
-	const float minScaleFactor = 0.25f;   // start scale factor relative to final computed sprite scale
-	bool isTerminal = (result == -1 || result == 1 || result == 0);
-
-	// start animation only once when terminal result first appears
-	if (isTerminal) {
-		if ((animResult != result) || (!animShownForResult && animResult == 999)) {
-			animResult = result;
-			animClock.restart();
-			animShownForResult = false;
-		}
-	}
-	else {
-		// reset when game is not in terminal state so next finish can show again
-		animResult = 999;
-		animShownForResult = false;
-	}
-
-	// draw overlay while animation active and not already finished
-	if (animResult != 999 && !animShownForResult) {
-		float t = animClock.getElapsedTime().asSeconds();
-
-		if (t >= totalDuration) {
-			// finished showing once -> mark shown and stop drawing
-			animShownForResult = true;
-		}
-		else {
-			// compute center of board area to anchor overlay
-			sf::FloatRect boardBounds = boardS.getGlobalBounds();
-			float centerX = boardBounds.left + boardBounds.width / 2.f;
-			float centerY = boardBounds.top + boardBounds.height / 2.f;
-
-			// choose which sprite to display (before during scale, after afterwards)
-			sf::Sprite* chosen = nullptr;
-			if (t < scaleDuration) {
-				// during scale-up show "before" image
-				if (animResult == -1 || animResult == 1) {
-					if (winBeforeT.getSize().x > 0) chosen = &winBeforeS;
-				}
-				else {
-					if (loseBeforeT.getSize().x > 0) chosen = &loseBeforeS;
-				}
-			}
-			else {
-				// after scale-up show final "after" image
-				if (animResult == -1) {
-					if (XwinT.getSize().x > 0) chosen = &XwinS;
-				}
-				else if (animResult == 1) {
-					if (OwinT.getSize().x > 0) chosen = &OwinS;
-				}
-				else {
-					if (XloseT.getSize().x > 0) chosen = &XloseS;
-				}
-			}
-
-			if (chosen && chosen->getTexture()) {
-				// compute base scale so sprite width ~ 70% of board width
-				float baseTargetWidth = boardBounds.width * 0.7f;
-				float baseScale = baseTargetWidth / static_cast<float>(chosen->getTexture()->getSize().x);
-
-				// current scale factor: interpolate from minScaleFactor to 1.0 over scaleDuration
-				float scaleFactor = 1.0f;
-				if (t < scaleDuration) {
-					float p = t / scaleDuration;
-					// smooth ease-out for nicer opening (quadratic)
-					float ease = 1.0f - (1.0f - p) * (1.0f - p);
-					scaleFactor = minScaleFactor + (1.0f - minScaleFactor) * ease;
-				}
-				else {
-					scaleFactor = 1.0f;
-				}
-
-				// apply scaling and center
-				chosen->setOrigin(chosen->getTexture()->getSize().x / 2.f, chosen->getTexture()->getSize().y / 2.f);
-				chosen->setPosition(centerX, centerY - 60.0f); // slightly above center
-				chosen->setScale(baseScale * scaleFactor, baseScale * scaleFactor);
-				chosen->setColor(sf::Color(255, 255, 255, 255)); // fully opaque
-
-				window.draw(*chosen);
-			}
-		}
-	}
-
 	// Thông tin game
 	window.draw(barS);
 	sf::Font font;
@@ -1145,21 +1065,11 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 			message = "NGUOI CHOI X THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
 			gameInfo.setPosition(550.0f, 34.0f);
-
-			// Hiệu ứng O thua
-			sf::Sprite overlay = frameO_S; // Copy toàn bộ texture, scale, position của frameO
-			overlay.setColor(sf::Color(0, 0, 0, 180)); // Màu đen (0,0,0) với độ trong suốt (alpha) 180
-			window.draw(overlay);
 		}
 		else if (result == 1) {
 			message = "NGUOI CHOI O THANG!";
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
 			gameInfo.setPosition(550.0f, 34.0f);
-
-			// Hiệu ứng X thua
-			sf::Sprite overlay = frameX_S; // Copy toàn bộ texture, scale, position của frameX
-			overlay.setColor(sf::Color(0, 0, 0, 180)); // Màu đen (0,0,0) với độ trong suốt (alpha) 180
-			window.draw(overlay);
 		}
 		else if (result == 0) {
 			message = "HOA!";
@@ -1196,7 +1106,7 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesXText.setCharacterSize(24);
 		movesXText.setFillColor(textColor);
 		movesXText.setString("So luot: " + std::to_string(_movesX));
-		movesXText.setPosition(textAreaX + 15.0f, textAreaY + 50.0f);
+		movesXText.setPosition(textAreaX + 10.0f, textAreaY + 40.0f);
 
 		sf::Text winsXText;
 		winsXText.setFont(font);
@@ -1242,6 +1152,121 @@ void DrawBoard(sf::RenderWindow& window, int n, int result) {
 		window.draw(movesOText);
 		window.draw(winsOText);
 	}
+
+	//Hiệu ứng thắng thua
+	static int animResult = 999;
+	static sf::Clock animClock;
+	static bool animShownForResult = false;
+
+	const float scaleDuration = 0.4f;
+	const float totalDuration = 4.5f;
+	const float minScaleFactor = 0.05f;
+	bool isTerminal = (result == -1 || result == 1 || result == 0);
+	if (isTerminal) {
+		continueGameS.setScale(barScale, barScale);
+		continueGameS.setPosition(barX - 370.0f, barY - 196.0f);
+		outGameS.setScale(barScale, barScale);
+		outGameS.setPosition(barX + 90.0f, barY - 225.0f);
+
+		static int buttonChoice = 0; // 0: Continue, 1: Exit
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+			buttonChoice = 0; //Continue
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+			buttonChoice = 1; //Exit
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+			return buttonChoice; 
+		}
+
+		if (buttonChoice == 0) {
+			continueGameS.setTexture(continueGameONT); // ON for Continue
+			outGameS.setTexture(outGameT); // OFF for Exit
+		}
+		else {
+			continueGameS.setTexture(continueGameT); // OFF for Continue
+			outGameS.setTexture(outGameONT); // ON for Exit
+		}
+
+		window.draw(continueGameS);
+		window.draw(outGameS);
+	}
+
+	if (isTerminal) {
+		if ((animResult != result) || (!animShownForResult && animResult == 999)) {
+			animResult = result;
+			animClock.restart();
+			animShownForResult = false;
+		}
+	}
+	else {
+		animResult = 999;
+		animShownForResult = false;
+	}
+
+	if (animResult != 999 && !animShownForResult) {
+		float t = animClock.getElapsedTime().asSeconds();
+
+		if (t >= totalDuration) {
+			animShownForResult = true;
+		}
+		else {
+			sf::FloatRect boardBounds = boardS.getGlobalBounds();
+			float centerX = boardBounds.left + boardBounds.width / 2.f;
+			float centerY = boardBounds.top + boardBounds.height / 2.f;
+
+			sf::Sprite* chosen = nullptr;
+			if (t < scaleDuration) {
+				if (animResult == -1 || animResult == 1) {
+					if (winBeforeT.getSize().x > 0) chosen = &winBeforeS;
+				}
+				else {
+					if (loseBeforeT.getSize().x > 0) chosen = &loseBeforeS;
+				}
+			}
+			else {
+				if (animResult == -1) {
+					if (XwinT.getSize().x > 0) chosen = &XwinS;
+				}
+				else if (animResult == 1) {
+					if (_isPvE) {
+						if (XloseT.getSize().x > 0) chosen = &XloseS;
+					}
+					else {
+						if (OwinT.getSize().x > 0) chosen = &OwinS;
+					}
+				}
+				else {
+					if (XloseT.getSize().x > 0) chosen = &XloseS;
+				}
+			}
+
+			if (chosen && chosen->getTexture()) {
+				float baseTargetWidth = boardBounds.width * 1.0f;
+				float baseScale = baseTargetWidth / static_cast<float>(chosen->getTexture()->getSize().x);
+
+				float scaleFactor = 1.0f;
+				if (t < scaleDuration) {
+					float p = t / scaleDuration;
+					float ease = 1.0f - (1.0f - p) * (1.0f - p);
+					scaleFactor = minScaleFactor + (1.0f - minScaleFactor) * ease;
+				}
+				else {
+					scaleFactor = 1.0f;
+				}
+
+				chosen->setOrigin(chosen->getTexture()->getSize().x / 2.f, chosen->getTexture()->getSize().y / 2.f);
+				chosen->setPosition(centerX, centerY - 20.0f);
+				chosen->setScale(baseScale * scaleFactor, baseScale * scaleFactor);
+				chosen->setColor(sf::Color(255, 255, 255, 255));
+
+				window.draw(*chosen);
+			}
+		}
+	}
+
+	return -1;
 }
 	
 

@@ -94,12 +94,12 @@ main_menu:
                         if (_isPvE && !_TURN && result == 2) continue;
 
                         if (result != 2) {
-                            if (event.key.code == sf::Keyboard::Enter) {
-                                StartGame();
-                                result = 2; 
+
+                            if (result != 2) {
+                                if (event.key.code == sf::Keyboard::Escape) return;
+                                continue;
                             }
-                            else if (event.key.code == sf::Keyboard::Escape) return;
-                            continue;
+
                         }
 
                         if (isPaused) continue;
@@ -170,8 +170,20 @@ main_menu:
 
                 // === 4. Render Game ===
                 window.clear();
-                DrawBoard(window, BOARD_SIZE, result);
+                int drawChoice = DrawBoard(window, BOARD_SIZE, result);
 
+                // Handle DrawBoard return value
+                if (drawChoice == 0) { // Continue: reset board, turns, and move counts, but keep wins
+                    ResetData();
+                    _currentRow = 0;
+                    _currentCol = 0;
+                    _movesX = 0;
+                    _movesO = 0;
+                    result = 2;
+                }
+                else if (drawChoice == 1) { // Exit: return to menu
+                    return;
+                }
                 
                 settingButton.setTexture(settingOffT);
                 pauseButton.setTexture(pauseOffT);
