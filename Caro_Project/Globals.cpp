@@ -16,3 +16,5 @@ int _winsX = 0;
 int _winsO = 0;
 int _movesX = 0;
 int _movesO = 0;
+
+int _matchCount = 1;
