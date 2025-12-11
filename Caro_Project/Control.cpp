@@ -1,4 +1,4 @@
-﻿#include "Control.h"
+#include "Control.h"
 #include "Model.h"
 #include "View.h"
 #include "Globals.h"
@@ -11,7 +11,8 @@ void StartGame() {
     _movesX = 0;
     _movesO = 0;
     _winsX = 0;   
-    _winsO = 0;  
+    _winsO = 0; 
+    _matchCount = 1;
 }
 
 void ExitGame() {
