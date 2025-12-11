@@ -172,7 +172,16 @@ main_menu:
                 int drawChoice = DrawBoard(window, BOARD_SIZE, result);
 
                 // Handle DrawBoard return value
-                if (drawChoice == 0) { // Continue: reset board, turns, and move counts, but keep wins
+                if (drawChoice == 0) { // Continue
+                    if (_matchCount >= 9) {
+                        // Nếu đã là ván 9 thì không cho tăng nữa, bắt thoát ra menu
+                        sf::Event e;
+                        while (window.pollEvent(e));
+                        return;
+                    }
+
+                    _matchCount++; 
+
                     ResetData();
                     _currentRow = 0;
                     _currentCol = 0;
