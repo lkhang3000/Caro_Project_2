@@ -380,6 +380,11 @@ void SaveGame(const string& filename, GameRule rule, int result)
     fout << _TURN << "\n";
     fout << result << "\n";
 
+    // Lưu số ván hiện tại xuống file
+    fout << _matchCount << "\n";
+    fout << _winsX << "\n";
+    fout << _winsO << "\n";
+
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         for (int j = 0; j < BOARD_SIZE; j++)
@@ -421,6 +426,10 @@ bool LoadFromFile(int slot)
     int ruleInt = 0;
     int result = 2;
     fin >> ruleInt >> _TURN >> result;
+    // Đọc lại số ván từ file lên biến
+    fin >> _matchCount;
+    fin >> _winsX;
+    fin >> _winsO;
     fin.ignore();
 
     GameRule rule = static_cast<GameRule>(ruleInt);
