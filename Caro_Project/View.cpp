@@ -1,4 +1,4 @@
-﻿#pragma execution_character_set("utf-8")
+#pragma execution_character_set("utf-8")
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include "View.h"
@@ -972,6 +972,8 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	float boardY = 5.0f;
 	boardS.setPosition(boardX, boardY);
 
+	
+
 	// Thanh thông báo
 	float barScale = 3.5f;
 	barS.setScale(barScale, barScale);
@@ -1008,6 +1010,33 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 	window.draw(bgSprite);
 	window.draw(boardS);
+
+	//Vẽ ván số mấy
+	static std::vector<sf::Texture> numberTextures;
+	if (numberTextures.empty()) {
+		for (int i = 1; i <= 9; i++) {
+			sf::Texture t;
+			if (!t.loadFromFile("Assets/playing/" + std::to_string(i) + ".png")) {
+				std::cerr << "Thieu anh so: " << i << "\n";
+			}
+			numberTextures.push_back(t);
+		}
+	}
+
+	// 2. Chọn ảnh dựa trên _matchCount hiện tại
+
+	int index = _matchCount - 1;
+
+	if (index >= 0 && index < numberTextures.size()) {
+		sf::Sprite matchNumberSprite;
+		matchNumberSprite.setTexture(numberTextures[index]);
+
+		// Scale ảnh nếu to quá (tuỳ chỉnh số này cho vừa ô)
+		matchNumberSprite.setScale(boardScale, boardScale);
+		matchNumberSprite.setPosition(boardX, boardY);
+
+		window.draw(matchNumberSprite);
+	}
 
 	// Vẽ quân cờ
 	for (int i = 0; i < BOARD_SIZE; i++) {
@@ -1146,6 +1175,11 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		window.draw(movesOText);
 		window.draw(winsOText);
 	}
+
+
+
+	
+
 
 	//Hiệu ứng thắng thua
 	static int animResult = 999;
