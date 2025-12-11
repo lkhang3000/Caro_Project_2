@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef Globals_h
 #define Globals_h
 #include "View.h"
@@ -21,4 +21,5 @@ extern int _winsO;
 extern int _movesX;  
 extern int _movesO;  
 
+extern int _matchCount;
 #endif
