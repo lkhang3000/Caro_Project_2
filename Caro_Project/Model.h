@@ -10,7 +10,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
+#include <utility>
 
 // Reset bàn cờ, gán lại tọa độ và giá trị mặc định
 void ResetData();
@@ -66,6 +66,7 @@ struct SaveInfo {
     std::string date;
     std::string time;
     std::wstring ruleName;
+    std::wstring matchCountStr;
     bool isValid = false; // <--- Đã khởi tạo để tránh lỗi
 };
 
@@ -75,5 +76,8 @@ std::vector<SaveInfo> GetListSaveFiles();
 _POINT GetBotMove();
 
 extern GameRule _rule;
+// Hiệu ứng highlight thắng
+extern std::vector<std::pair<int, int>> _winningLine;
+void SaveWinCoords(int r, int c, int dr, int dc, int player);
 
 #endif

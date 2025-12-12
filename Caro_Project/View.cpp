@@ -1,4 +1,4 @@
-#pragma execution_character_set("utf-8")
+﻿#pragma execution_character_set("utf-8")
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include "View.h"
@@ -333,7 +333,7 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 		L"Trường Đại học Khoa học Tự nhiên - ĐHQGHCM\n"
 		L"		ĐỒ ÁN GAME CARO - 25C10\n\n"
 		L"		  Giảng viên hướng dẫn: \n"
-		L"	   < ThS.Trương Toàn Thịnh >\n\n"
+		L"	    < TS.Trương Toàn Thịnh >\n\n"
 		L"	    Game được thực hiện bởi:\n"
 		L"     24127132 - Nguyễn Thị Ngọc Trâm\n"
 		L"     24127158 - Nguyễn Trần Lan Duy\n"
@@ -1010,7 +1010,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 	window.draw(bgSprite);
 	window.draw(boardS);
-
 	//Vẽ ván số mấy
 	static std::vector<sf::Texture> numberTextures;
 	if (numberTextures.empty()) {
@@ -1037,6 +1036,57 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 		window.draw(matchNumberSprite);
 	}
+
+	// ================= VẼ HIGHLIGHT NỀN Ô THẮNG =================
+	if (!_winningLine.empty()) {
+		// 1. Lấy thông tin
+		int rStart = _winningLine[0].first;
+		int cStart = _winningLine[0].second;
+		int winner = _A[rStart][cStart].c;
+
+		// 2. Tính toán kích thước (Khai báo biến rõ ràng tại đây)
+		float hlSize = cellSize - 4.0f; // Trừ 4px để chừa viền
+		sf::RectangleShape highlightShape(sf::Vector2f(hlSize, hlSize));
+
+		// Set viền dày lên để dễ nhìn
+		highlightShape.setOutlineThickness(3.0f);
+
+		// 3. Chọn màu (Dùng màu ĐẬM, không trong suốt)
+		if (winner == -1) {
+			// X thắng: Nền Xanh Nhạt - Viền Xanh Đậm
+			highlightShape.setFillColor(sf::Color(135, 206, 250, 255));
+			highlightShape.setOutlineColor(sf::Color(0, 0, 139));
+		}
+		else if (winner == 1) {
+			// O thắng: Nền Hồng - Viền Đỏ Đậm
+			highlightShape.setFillColor(sf::Color(255, 182, 193, 255));
+			highlightShape.setOutlineColor(sf::Color(139, 0, 0));
+		}
+		else {
+			// Dự phòng (Nếu lỗi): Màu Tím Đậm (Magenta)
+			highlightShape.setFillColor(sf::Color::Magenta);
+			highlightShape.setOutlineColor(sf::Color::Yellow);
+		}
+		// std::cout << "--- DRAWING HIGHLIGHT ---" << std::endl;
+		for (size_t k = 0; k < _winningLine.size(); k++) {
+			int r = _winningLine[k].first;
+			int c = _winningLine[k].second;
+
+			// Tính tọa độ (Khớp với bàn cờ)
+			float hlX = boardX + offsetX + (c * cellSize) + 2.0f;
+			float hlY = boardY + offsetY + (r * cellSize) + 2.0f;
+
+			// In thử tọa độ ô đầu tiên ra console để xem có bị lệch khỏi màn hình (0-1366) không
+			if (k == 0) {
+				// std::cout << "Highlight at: X=" << hlX << " Y=" << hlY << std::endl;
+			}
+
+			highlightShape.setPosition(hlX, hlY);
+			window.draw(highlightShape);
+		}
+	}
+
+	
 
 	// Vẽ quân cờ
 	for (int i = 0; i < BOARD_SIZE; i++) {
@@ -1068,7 +1118,9 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	float cursorX = boardX + offsetX + (_currentCol * cellSize) + 2;
 	float cursorY = boardY + offsetY + (_currentRow * cellSize) + 2;
 	cursor.setPosition(cursorX, cursorY);
-	window.draw(cursor);
+	if (result == 2) {
+		window.draw(cursor);
+	}
 
 	// Vẽ frames
 	window.draw(frameX_S);
@@ -1639,6 +1691,7 @@ std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::V
 	return "";
 }
 
+
 int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue)
 {
 	sf::Texture blankT, yesOnT, yesOffT, noOnT, noOffT, okOnT, okOffT;
@@ -1752,20 +1805,173 @@ int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askCo
 	return 0;
 }
 
+// Trả về 1 nếu chọn Yes (Muốn xóa), 0 nếu chọn No (Hủy)
+int ShowFullMemoryAlert(sf::RenderWindow& window, sf::Font& font)
+{
+	// 1. Tải tài nguyên
+	sf::Texture blankT, yesOnT, yesOffT, noOnT, noOffT;
+
+	// Background bảng
+	if (!blankT.loadFromFile("Assets/background/save_board_blank.png")) return 0;
+
+	// Nút Yes/No (Tận dụng lại asset của màn hình Save Success)
+	if (!yesOnT.loadFromFile("Assets/button/save_blank_yes_on.png")) return 0;
+	if (!yesOffT.loadFromFile("Assets/button/save_blank_yes_off.png")) return 0;
+	if (!noOnT.loadFromFile("Assets/button/save_blank_no_on.png")) return 0;
+	if (!noOffT.loadFromFile("Assets/button/save_blank_no_off.png")) return 0;
+
+	sf::Sprite blankS(blankT);
+	sf::Sprite btnYes(yesOffT);
+	sf::Sprite btnNo(noOffT);
+
+	// 2. Scale
+	blankS.setScale(scaleX, scaleY);
+	btnYes.setScale(scaleX, scaleY);
+	btnNo.setScale(scaleX, scaleY);
+
+	// 3. Vị trí
+	sf::Vector2u winSize = window.getSize();
+	float actualWidth = blankT.getSize().x * scaleX;
+	float actualHeight = blankT.getSize().y * scaleY;
+	float centerX = (winSize.x - actualWidth) / 2.f;
+	float centerY = (winSize.y - actualHeight) / 2.f;
+
+	blankS.setPosition(centerX, centerY);
+	// Nút Yes/No đặt trùng vị trí bg (vì asset đã căn sẵn), hoặc chỉnh nhẹ nếu cần
+	btnYes.setPosition(centerX, centerY);
+	btnNo.setPosition(centerX, centerY);
+
+	// 4. Text thông báo
+	sf::Text msg1, msg2, msg3;
+	msg1.setFont(font);
+	msg2.setFont(font);
+	msg3.setFont(font);
+
+	msg1.setCharacterSize(35);
+	msg2.setCharacterSize(28);
+	msg3.setCharacterSize(28);
+
+	msg1.setFillColor(sf::Color(139, 0, 0)); // Đỏ
+	msg2.setFillColor(sf::Color(80, 48, 32)); // Nâu
+	msg3.setFillColor(sf::Color(80, 48, 32)); // Nâu
+
+	msg1.setString(L"Bộ nhớ đã đầy (5/5)!");
+	msg2.setString(L"Bạn có muốn xóa file cũ");
+	msg3.setString(L"để tiếp tục lưu không?");
+
+	
+	msg1.setPosition(centerX + actualWidth * 0.38f, centerY + actualHeight * 0.33f);
+	msg2.setPosition(centerX + actualWidth * 0.38f, centerY + actualHeight * 0.40f);
+	msg3.setPosition(centerX + actualWidth * 0.39f, centerY + actualHeight * 0.44f);
+
+	int choice = 0; 
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::KeyPressed)
+			{
+				
+				if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left)
+					choice = 0;
+				else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right)
+					choice = 1;
+
+				if (event.key.code == sf::Keyboard::Enter) {
+					return (choice == 0) ? 1 : 0;
+				}
+
+				
+				if (event.key.code == sf::Keyboard::Escape) return 0;
+			}
+		}
+
+		window.clear();
+		window.draw(sharedBgSprite);
+		window.draw(blankS);
+
+		
+		if (choice == 0) { 
+			btnYes.setTexture(yesOnT);
+			btnNo.setTexture(noOffT);
+		}
+		else { 
+			btnYes.setTexture(yesOffT);
+			btnNo.setTexture(noOnT);
+		}
+
+		window.draw(btnYes);
+		window.draw(btnNo);
+
+		window.draw(msg1);
+		window.draw(msg2);
+		window.draw(msg3);
+
+		window.display();
+	}
+	return 0;
+}
+
+// Trong View.cpp
+
 int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView)
 {
-	std::string filename = GetInputString(window, font, gameView);
-	if (filename == "") return 2; // Hủy bỏ, quay lại game
+	// Vòng lặp để cho phép quay lại nhập tên nếu cần (tùy chọn), hoặc đơn giản là xử lý flow
+	while (true) {
+		std::string filename = GetInputString(window, font, gameView);
+		if (filename == "") return 2; // Người dùng nhấn ESC hoặc chọn Exit tại bảng nhập tên
 
-	// Lưu game
-	if (filename.empty()) filename = "Untitled";
-	extern GameRule rule;
-	SaveGame(filename, rule, 2); // 2 = Đang chơi
+		if (filename.empty()) filename = "Untitled";
 
-	// Thông báo thành công và hỏi chơi tiếp
-	int choice = handleSaveSuccessScreen(window, font, true);
-	if (choice == 0) return 1; // Yes -> Chơi tiếp
-	return 0; // No -> Về menu chính
+		// 1. Kiểm tra logic ghi đè và đầy bộ nhớ
+		std::vector<SaveInfo> currentFiles = GetListSaveFiles();
+		bool isOverwriting = false;
+		for (const auto& file : currentFiles) {
+			if (file.filename == filename) {
+				isOverwriting = true;
+				break;
+			}
+		}
+
+		if (!isOverwriting && currentFiles.size() >= 5) {
+
+			
+			int userChoice = ShowFullMemoryAlert(window, font);
+
+			if (userChoice == 1) {
+				int action = loadGameScreen(window);
+
+				if (action == 1) {
+					return 1;
+				}
+
+				std::vector<SaveInfo> newFileList = GetListSaveFiles();
+
+				if (newFileList.size() < 5) {
+					extern GameRule rule;
+					SaveGame(filename, rule, 2);
+
+					int choice = handleSaveSuccessScreen(window, font, true);
+					return (choice == 0) ? 1 : 0;
+				}
+				else {
+					return 2;
+				}
+			}
+			else {
+				return 2;
+			}
+		}
+
+		extern GameRule rule;
+		SaveGame(filename, rule, 2);
+
+		int choice = handleSaveSuccessScreen(window, font, true);
+		if (choice == 0) return 1;
+		return 0;
+	}
 }
 
 int loadGameScreen(sf::RenderWindow& window)
@@ -1824,24 +2030,27 @@ int loadGameScreen(sf::RenderWindow& window)
 	}
 
 	// --- SETUP TEXT ---
-	sf::Text txtName, txtRule, txtTime, txtDate, txtEmpty;
+	sf::Text txtName, txtRule, txtTime, txtDate, txtEmpty, txtMatch;
 	txtName.setFont(font);
 	txtRule.setFont(font);
 	txtTime.setFont(font);
 	txtDate.setFont(font);
 	txtEmpty.setFont(font);
+	txtMatch.setFont(font);
 
 	sf::Color brownColor(80, 48, 32);
 	txtName.setFillColor(brownColor);
 	txtRule.setFillColor(brownColor);
 	txtTime.setFillColor(brownColor);
 	txtDate.setFillColor(brownColor);
+	txtMatch.setFillColor(brownColor);
 	txtEmpty.setFillColor(sf::Color(150, 150, 150));
 
 	txtName.setCharacterSize(30);
 	txtRule.setCharacterSize(24);
 	txtTime.setCharacterSize(20);
 	txtDate.setCharacterSize(20);
+	txtMatch.setCharacterSize(24);
 	txtEmpty.setCharacterSize(28);
 
 	int selectedSlot = 0;
@@ -2009,17 +2218,21 @@ int loadGameScreen(sf::RenderWindow& window)
 				txtName.setPosition(startX - 150.0f, currentY + 40.0f);
 
 				txtRule.setString(info.ruleName);
-				txtRule.setPosition(startX + 100.0f, currentY + 45.0f);
+				txtRule.setPosition(startX + 100.0f, currentY + 33.0f);
+
+				txtMatch.setString(info.matchCountStr);
+				txtMatch.setPosition(startX + 350.0f, currentY + 33.0f);
 
 				txtTime.setString(info.time);
 				txtDate.setString(info.date);
-				txtTime.setPosition(startX + 350.0f, currentY + 36.0f);
-				txtDate.setPosition(startX + 350.0f, currentY + 61.0f);
+				txtTime.setPosition(startX + 100.0f, currentY + 62.0f);
+				txtDate.setPosition(startX + 350.0f, currentY + 62.0f);
 
 				window.draw(txtName);
 				window.draw(txtRule);
 				window.draw(txtTime);
 				window.draw(txtDate);
+				window.draw(txtMatch);
 			}
 		}
 

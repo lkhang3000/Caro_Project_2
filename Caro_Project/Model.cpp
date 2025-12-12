@@ -23,6 +23,7 @@ void ResetData()
     _COMMAND = -1;
     _X = _A[0][0].x;
     _Y = _A[0][0].y;
+    _winningLine.clear();
 }
 
 // ====================== CHUNG ======================
@@ -60,39 +61,28 @@ bool CheckWin_Freestyle()
     const int dx[4] = { 1, 0, 1, 1 };
     const int dy[4] = { 0, 1, 1, -1 };
 
-    for (int i = 0; i < BOARD_SIZE; ++i)
-    {
-        for (int j = 0; j < BOARD_SIZE; ++j)
-        {
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        for (int j = 0; j < BOARD_SIZE; ++j) {
             int player = _A[i][j].c;
             if (player == 0) continue;
 
-            for (int dir = 0; dir < 4; dir++)
-            {
+            for (int dir = 0; dir < 4; dir++) {
                 int count = 1;
                 int x = i + dx[dir];
                 int y = j + dy[dir];
 
-                // Đếm xuôi
-                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player)
-                {
-                    count++;
-                    x += dx[dir];
-                    y += dy[dir];
+                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player) {
+                    count++; x += dx[dir]; y += dy[dir];
+                }
+                x = i - dx[dir]; y = j - dy[dir];
+                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player) {
+                    count++; x -= dx[dir]; y -= dy[dir];
                 }
 
-                // Đếm ngược
-                x = i - dx[dir];
-                y = j - dy[dir];
-                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player)
-                {
-                    count++;
-                    x -= dx[dir];
-                    y -= dy[dir];
-                }
-
-                if (count >= 5)
+                if (count >= 5) {
+                    SaveWinCoords(i, j, dx[dir], dy[dir], player); // [THÊM] Lưu tọa độ
                     return true;
+                }
             }
         }
     }
@@ -116,41 +106,28 @@ bool CheckWin_Standard()
     const int dx[4] = { 1, 0, 1, 1 };
     const int dy[4] = { 0, 1, 1, -1 };
 
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        for (int j = 0; j < BOARD_SIZE; j++)
-        {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             int player = _A[i][j].c;
             if (player == 0) continue;
 
-            for (int dir = 0; dir < 4; dir++)
-            {
+            for (int dir = 0; dir < 4; dir++) {
                 int count = 1;
                 int x = i + dx[dir];
                 int y = j + dy[dir];
 
-                // Đếm xuôi
-                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player)
-                {
-                    count++;
-                    x += dx[dir];
-                    y += dy[dir];
+                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player) {
+                    count++; x += dx[dir]; y += dy[dir];
+                }
+                x = i - dx[dir]; y = j - dy[dir];
+                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player) {
+                    count++; x -= dx[dir]; y -= dy[dir];
                 }
 
-                // Đếm ngược
-                x = i - dx[dir];
-                y = j - dy[dir];
-                while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player)
-                {
-                    count++;
-                    x -= dx[dir];
-                    y -= dy[dir];
-                }
-
-                if (count == 5)
+                if (count == 5) {
+                    SaveWinCoords(i, j, dx[dir], dy[dir], player);
                     return true;
-                if (count > 5)
-                    continue;
+                }
             }
         }
     }
@@ -173,27 +150,22 @@ bool IsBlockedTwoEnds(int x, int y, int dx, int dy, int player)
     int count = 1;
     int i = x + dx, j = y + dy;
 
-    // Đếm xuôi
-    while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == player)
-    {
-        count++;
-        i += dx;
-        j += dy;
+    while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == player) {
+        count++; i += dx; j += dy;
     }
     bool blocked1 = (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == -player);
 
-    // Đếm ngược
-    i = x - dx;
-    j = y - dy;
-    while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == player)
-    {
-        count++;
-        i -= dx;
-        j -= dy;
+    i = x - dx; j = y - dy;
+    while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == player) {
+        count++; i -= dx; j -= dy;
     }
     bool blocked2 = (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && _A[i][j].c == -player);
 
-    return (count >= 5 && !(blocked1 && blocked2)); // chỉ thắng nếu không bị chặn cả 2 đầu
+    if (count >= 5 && !(blocked1 && blocked2)) {
+        SaveWinCoords(x, y, dx, dy, player); 
+        return true;
+    }
+    return false;
 }
 
 bool CheckWin_BlockedTwoEnds()
@@ -317,6 +289,16 @@ void ReadSaveInfo(SaveInfo& info) {
             info.ruleName = L"Unknown";
             break;
         }
+    }
+
+    int tempTurn, tempResult, tempMatchCount;
+    // Đọc bỏ qua Turn và Result, lấy MatchCount
+    if (fin >> tempTurn >> tempResult >> tempMatchCount) {
+        info.matchCountStr = L"V\u00E1n: " + to_wstring(tempMatchCount);
+    }
+    else {
+        // Phòng trường hợp file save cũ chưa có dòng này
+        info.matchCountStr = L"V\u00E1n: ?";
     }
     fin.close();
 }
@@ -465,7 +447,10 @@ bool LoadFromFile(const std::string& filePath)
     int ruleInt = 0;
     int result = 2;
     fin >> ruleInt >> _TURN >> result;
-    fin.ignore(); // Bỏ qua ký tự xuống dòng
+    fin >> _matchCount;
+    fin >> _winsX;
+    fin >> _winsO;
+    fin.ignore();
 
     GameRule rule = static_cast<GameRule>(ruleInt);
 
@@ -617,4 +602,36 @@ bool DeleteSaveFile(const std::string& filename) {
     }
     catch (...) { return false; }
     return false;
+}
+
+// Hightlight
+std::vector<std::pair<int, int>> _winningLine;
+void SaveWinCoords(int r, int c, int dr, int dc, int player) {
+    _winningLine.clear();
+    // 1. Thêm quân ở tâm
+    _winningLine.push_back({ r, c });
+
+    // 2. Duyệt xuôi (cộng d)
+    int k = 1;
+    while (true) {
+        int nr = r + dr * k;
+        int nc = c + dc * k;
+        if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && _A[nr][nc].c == player) {
+            _winningLine.push_back({ nr, nc });
+            k++;
+        }
+        else break;
+    }
+
+    // 3. Duyệt ngược (trừ d)
+    k = 1;
+    while (true) {
+        int nr = r - dr * k;
+        int nc = c - dc * k;
+        if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && _A[nr][nc].c == player) {
+            _winningLine.push_back({ nr, nc });
+            k++;
+        }
+        else break;
+    }
 }

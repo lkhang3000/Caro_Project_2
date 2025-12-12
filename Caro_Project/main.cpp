@@ -188,6 +188,10 @@ main_menu:
                     _movesX = 0;
                     _movesO = 0;
                     result = 2;
+                    sf::sleep(sf::milliseconds(200));
+                    sf::Event e;
+                    while (window.pollEvent(e)) {
+                    }
                 }
                 else if (drawChoice == 1) { // Exit: return to menu
                     return;
