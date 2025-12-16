@@ -231,7 +231,7 @@ int mainScreen(sf::RenderWindow& window) {
 	}
 	return 0;
 }
-// Hàm xử lý màn hình Settings
+
 void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 	enum VolumeLevel { MUTED, LOW, MEDIUM, MAX };
 
@@ -484,7 +484,6 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 		window.display();
 	}
 }
-
 
 int modeChoosing(sf::RenderWindow& window) {
 	// Khởi tạo font
@@ -906,7 +905,10 @@ void GotoXY(int x, int y) {
 
 int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	sf::Texture board1T, xTexture, oTexture, bgTexture, barT, board2T, board3T, frameX_T, frameO_T, winBeforeT, XwinT, OwinT, XloseT, loseBeforeT, outGameT, outGameONT, continueGameT, continueGameONT;
+	sf::Texture drawAfterT, frameXActive_T, frameOActive_T, modeX_T[4], modeO_T[3];
+
 	sf::Sprite boardS, xSprite, oSprite, bgSprite, barS, frameX_S, frameO_S, winBeforeS, XwinS, OwinS, XloseS, loseBeforeS, outGameS, outGameONS, continueGameS, continueGameONS;
+	sf::Sprite  modeX_S[4], modeO_S[3], drawAfterS;
 
 	board1T.loadFromFile("Assets/playing/board.png");
 	board3T.loadFromFile("Assets/playing/board_renju.png");
@@ -914,17 +916,37 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	xTexture.loadFromFile("Assets/playing/X_letter.png");
 	oTexture.loadFromFile("Assets/playing/O_letter.png");
 	barT.loadFromFile("Assets/background/text_board.png");
-	frameX_T.loadFromFile("Assets/playing/frameX.png");
-	frameO_T.loadFromFile("Assets/playing/frameO.png");
+
+	// win/lose overlays
 	winBeforeT.loadFromFile("Assets/playing/winBefore.png");
 	XwinT.loadFromFile("Assets/playing/winAfter_X.png");
 	OwinT.loadFromFile("Assets/playing/winAfter_O.png");
 	XloseT.loadFromFile("Assets/playing/loseAfter.png");
 	loseBeforeT.loadFromFile("Assets/playing/loseBefore.png");
+	drawAfterT.loadFromFile("Assets/playing/drawAfter.png");
+
+	// button
 	outGameT.loadFromFile("Assets/button/exit_game.png");
 	outGameONT.loadFromFile("Assets/button/exit_game_on.png");
 	continueGameT.loadFromFile("Assets/button/continue_game.png");
 	continueGameONT.loadFromFile("Assets/button/continue_game_on.png");
+
+	// frames X / O
+	frameX_T.loadFromFile("Assets/playing/frameX.png");
+	frameO_T.loadFromFile("Assets/playing/frameO.png");
+	frameXActive_T.loadFromFile("Assets/playing/x_turn.png");
+	frameOActive_T.loadFromFile("Assets/playing/o_turn.png");
+	// Mode FREESTYLE
+	modeX_T[0].loadFromFile("Assets/player/freestyle_X.png");
+	modeO_T[0].loadFromFile("Assets/player/freestyle_O.png");
+	// Mode STANDARD
+	modeX_T[1].loadFromFile("Assets/player/standard_X.png");
+	modeO_T[1].loadFromFile("Assets/player/standard_O.png");
+	// Mode RENJU
+	modeX_T[2].loadFromFile("Assets/player/renju_X.png");
+	modeO_T[2].loadFromFile("Assets/player/renju_O.png");
+	modeX_T[3].loadFromFile("Assets/player/momotaro.png");
+
 
 	// assign textures to sprites for win/lose overlays
 	if (winBeforeT.getSize().x > 0) winBeforeS.setTexture(winBeforeT);
@@ -932,7 +954,17 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	if (OwinT.getSize().x > 0) OwinS.setTexture(OwinT);
 	if (XloseT.getSize().x > 0) XloseS.setTexture(XloseT);
 	if (loseBeforeT.getSize().x > 0) loseBeforeS.setTexture(loseBeforeT);
+	if (drawAfterT.getSize().x > 0)  drawAfterS.setTexture(drawAfterT);
+	for (int i = 0; i < 3; i++) {
+		if (modeX_T[i].getSize().x > 0)
+			modeX_S[i].setTexture(modeX_T[i]);
 
+		if (modeO_T[i].getSize().x > 0)
+			modeO_S[i].setTexture(modeO_T[i]);
+	}
+	if (modeX_T[3].getSize().x > 0) modeX_S[3].setTexture(modeX_T[3]);
+
+	// Set background và giao diện theo mode
 	string bgPath = "Assets/background/board_background" + to_string(_backgroundBoard) + ".png";
 	bgTexture.loadFromFile(bgPath);
 
@@ -954,6 +986,7 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		break;
 	}
 
+
 	xSprite.setTexture(xTexture);
 	oSprite.setTexture(oTexture);
 	barS.setTexture(barT);
@@ -972,7 +1005,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	float boardY = 5.0f;
 	boardS.setPosition(boardX, boardY);
 
-	
 
 	// Thanh thông báo
 	float barScale = 3.5f;
@@ -1007,9 +1039,57 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 	frameX_S.setPosition(frameLeftX, frameY);
 	frameO_S.setPosition(frameRightX, frameY);
+	if (result == 2) { // Game đang chơi
+		if (_TURN) {
+			// Lượt X
+			frameX_S.setTexture(frameXActive_T);
+			frameO_S.setTexture(frameO_T);
+		}
+		else {
+			// Lượt O
+			frameX_S.setTexture(frameX_T);
+			frameO_S.setTexture(frameOActive_T);
+		}
+	}
+	else {
+		// Game kết thúc → trở về frame thường
+		frameX_S.setTexture(frameX_T);
+		frameO_S.setTexture(frameO_T);
+	}
 
 	window.draw(bgSprite);
 	window.draw(boardS);
+
+	// Giao diện trong FRAME theo MODE
+	sf::Vector2f modeXScale[4] = {
+		{0.9f, 0.9f},   // Mode 1
+		{1.0f, 1.0f},   // Mode 2
+		{1.03f, 1.03f},   // Mode 3
+		{1.9f, 1.9f}  // Momotaro chung
+	};
+
+	sf::Vector2f modeOScale[3] = {
+		{2.13f, 2.13f},
+		{2.13f, 2.13f},
+		{2.13f, 2.13f}
+	};
+
+	sf::Vector2f modeXOffset[4] = {
+		{105.f, 497.f},
+		{87.f, 493.f},
+		{70.f, 496.f},
+		{30.f, 303.f}
+	};
+
+	sf::Vector2f modeOOffset[3] = {
+		{560.f, 310.f},
+		{725.f, 320.f},
+		{560.f, 310.f}
+	};
+	// 1 = Tự do, 2 = Tiêu chuẩn, 3 = Chặn 2 đầu
+	int currentMode = _backgroundBoard - 1; // về index 0..2
+
+
 	//Vẽ ván số mấy
 	static std::vector<sf::Texture> numberTextures;
 	if (numberTextures.empty()) {
@@ -1087,7 +1167,6 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	}
 
 	
-
 	// Vẽ quân cờ
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		for (int j = 0; j < BOARD_SIZE; j++) {
@@ -1123,8 +1202,32 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	}
 
 	// Vẽ frames
+	// ===== MODE ICON X =====
+	modeX_S[currentMode].setScale(modeXScale[currentMode]);
+	modeX_S[3].setScale(modeXScale[3]);
+	modeX_S[currentMode].setPosition(
+		frameX_S.getPosition().x + modeXOffset[currentMode].x,
+		frameX_S.getPosition().y + modeXOffset[currentMode].y
+	);
+	modeX_S[3].setPosition(
+		frameX_S.getPosition().x + modeXOffset[3].x,
+		frameX_S.getPosition().y + modeXOffset[3].y
+	);
+
+	// ===== MODE ICON O =====
+	modeO_S[currentMode].setScale(modeOScale[currentMode]);
+	modeO_S[currentMode].setPosition(
+		frameO_S.getPosition().x + modeOOffset[currentMode].x,
+		frameO_S.getPosition().y + modeOOffset[currentMode].y
+	);
+
 	window.draw(frameX_S);
 	window.draw(frameO_S);
+
+	window.draw(modeX_S[3]);
+	window.draw(modeX_S[currentMode]);
+	window.draw(modeO_S[currentMode]);
+
 
 	// Thông tin game
 	window.draw(barS);
@@ -1137,7 +1240,7 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		gameInfo.setCharacterSize(26);
 		gameInfo.setStyle(sf::Text::Bold);
 
-		std::string message;
+		sf::String message;
 
 		if (isTerminal) {
 			// Nếu O thua
@@ -1155,8 +1258,10 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 			}
 		}
 		else {
-			std::string playerText = _TURN ? "X" : "O";
-			message = "Luot choi: " + playerText;
+			if (_TURN)
+				message = sf::String(L"Lượt chơi: X");
+			else
+				message = sf::String(L"Lượt chơi: O");
 			gameInfo.setFillColor(sf::Color(54, 39, 32));
 			gameInfo.setPosition(590.0f, 34.0f);
 		}
@@ -1182,14 +1287,18 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesXText.setFont(font);
 		movesXText.setCharacterSize(24);
 		movesXText.setFillColor(textColor);
-		movesXText.setString("So luot: " + std::to_string(_movesX));
+		movesXText.setString(
+			sf::String(L"Số lượt: ") + std::to_wstring(_movesX)
+		);
 		movesXText.setPosition(textAreaX + 15.0f, textAreaY + 50.0f);
 
 		sf::Text winsXText;
 		winsXText.setFont(font);
 		winsXText.setCharacterSize(24);
 		winsXText.setFillColor(textColor);
-		winsXText.setString("So thang: " + std::to_string(_winsX));
+		winsXText.setString(
+			sf::String(L"Số thắng: ") + std::to_wstring(_winsX)
+		);
 		winsXText.setPosition(textAreaX + 15.0f, textAreaY + 85.0f);
 
 		window.draw(titleX);
@@ -1213,24 +1322,24 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesOText.setFont(font);
 		movesOText.setCharacterSize(24);
 		movesOText.setFillColor(textColor);
-		movesOText.setString("So luot: " + std::to_string(_movesO));
+		movesOText.setString(
+			sf::String(L"Số lượt: ") + std::to_wstring(_movesO)
+		);
 		movesOText.setPosition(textAreaOX + 85.0f, textAreaOY + 50.0f);
 
 		sf::Text winsOText;
 		winsOText.setFont(font);
 		winsOText.setCharacterSize(24);
 		winsOText.setFillColor(textColor);
-		winsOText.setString("So thang: " + std::to_string(_winsO));
+		winsOText.setString(
+			sf::String(L"Số thắng: ") + std::to_wstring(_winsO)
+		);
 		winsOText.setPosition(textAreaOX + 85.0f, textAreaOY + 85.0f);
 
 		window.draw(titleO);
 		window.draw(movesOText);
 		window.draw(winsOText);
 	}
-
-
-
-	
 
 
 	//Hiệu ứng thắng thua
@@ -1327,13 +1436,19 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 						if (OwinT.getSize().x > 0) chosen = &OwinS;
 					}
 				}
+				else if (animResult == 0) {
+					// HÒA
+					if (drawAfterT.getSize().x > 0)
+						chosen = &drawAfterS;
+					chosen->setPosition(10.f, 0.0f);
+				}
 				else {
 					if (XloseT.getSize().x > 0) chosen = &XloseS;
 				}
 			}
 
 			if (chosen && chosen->getTexture()) {
-				float baseTargetWidth = boardBounds.width * 1.0f;
+				float baseTargetWidth = boardBounds.width * 0.90f;
 				float baseScale = baseTargetWidth / static_cast<float>(chosen->getTexture()->getSize().x);
 
 				float scaleFactor = 1.0f;
