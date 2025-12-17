@@ -1,7 +1,7 @@
-#pragma once
 #ifndef Globals_h
 #define Globals_h
 #include "View.h"
+#include <SFML/Audio.hpp>
 
 struct _POINT {
 	int x, y, c;
@@ -22,4 +22,12 @@ extern int _movesX;
 extern int _movesO;  
 
 extern int _matchCount;
+
+extern sf::Music _bgm;
+extern sf::SoundBuffer _winBuffer;
+extern sf::SoundBuffer _loseBuffer;
+extern sf::SoundBuffer _buttonBuffer;
+extern sf::SoundBuffer _tabBuffer;
+extern sf::Sound _sfx;
+
 #endif

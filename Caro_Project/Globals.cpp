@@ -18,3 +18,10 @@ int _movesX = 0;
 int _movesO = 0;
 
 int _matchCount = 1;
+
+sf::Music _bgm;
+sf::SoundBuffer _winBuffer;
+sf::SoundBuffer _loseBuffer;
+sf::SoundBuffer _buttonBuffer;
+sf::SoundBuffer _tabBuffer;
+sf::Sound _sfx;
