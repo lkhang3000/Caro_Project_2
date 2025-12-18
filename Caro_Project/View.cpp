@@ -140,22 +140,31 @@ int mainScreen(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::W:
+				case sf::Keyboard::Up:
+					PlayMoveSFX();
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::S:
+				case sf::Keyboard::Down:
+					PlayMoveSFX();
 					choice = (choice + 1) % totalOptions;
 					break;
 
 				case sf::Keyboard::A:
+				case sf::Keyboard::Left:
+					PlayMoveSFX();
 					choice = (choice - 1 + totalOptions) % totalOptions;
 					break;
 
 				case sf::Keyboard::D:
+				case sf::Keyboard::Right:
+					PlayMoveSFX();
 					choice = (choice + 1) % totalOptions;
 					break;
 
 				case sf::Keyboard::Enter:
+					PlayClickSFX();
 					if (choice == 4) { // Settings
 						handleSettings(window, font);
 						break;
@@ -349,17 +358,23 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) return;
-
+			if (event.type == sf::Event::Closed) {
+				PlayClickSFX();
+				return;
+			}
 			if (event.type == sf::Event::KeyPressed) {
 				// Only A S W D and Enter are used
 				auto key = event.key.code;
 
 				// ESC (optional) keeps previous behavior: exit settings
-				if (key == sf::Keyboard::Escape) return;
+				if (key == sf::Keyboard::Escape) {
+					PlayClickSFX();
+					return;
+				}
 
 				// ENTER: if Exit is selected exit; otherwise toggle edit mode in audio tab
 				if (key == sf::Keyboard::Enter) {
+					PlayClickSFX();
 					if (tabChoice == 4) return; // Exit button selected
 					if (tabChoice == 0) {
 						editing = !editing; // toggle editing mode for focused control
@@ -368,11 +383,13 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 				}
 				// W/S: inside audio tab, change focus between sound and effect (only when not editing)
 				else if (key == sf::Keyboard::W) {
+					PlayMoveSFX();
 					if (tabChoice == 0 && !editing) {
 						soundChoice = (soundChoice - 1 + 2) % 2;
 					}
 				}
 				else if (key == sf::Keyboard::S) {
+					PlayMoveSFX();
 					if (tabChoice == 0 && !editing) {
 						soundChoice = (soundChoice + 1) % 2;
 					}
@@ -380,6 +397,7 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 				// A/D: behave as:
 				// - if in audio tab and editing == true -> change value of focused control
 				else if (key == sf::Keyboard::A) {
+					PlayMoveSFX();
 					if (tabChoice == 0 && editing) {
 						// decrease focused value
 						if (soundChoice == 0)
@@ -395,6 +413,7 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 					}
 				}
 				else if (key == sf::Keyboard::D) {
+					PlayMoveSFX();
 					if (tabChoice == 0 && editing) {
 						// increase focused value
 						if (soundChoice == 0)
@@ -666,6 +685,8 @@ int modeChoosing(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
 				case sf::Keyboard::A:
+				case sf::Keyboard::Right:
+					PlayMoveSFX();
 					if (row == 1) {
 						cardChoice--;
 						if (cardChoice < 1) cardChoice = 3;
@@ -677,6 +698,8 @@ int modeChoosing(sf::RenderWindow& window) {
 					   break;
 
 				case sf::Keyboard::D:
+				case sf::Keyboard::Left:
+					PlayMoveSFX();
 					   if (row == 1) {
 						   cardChoice++;
 						   if (cardChoice > 3) cardChoice = 1;
@@ -688,6 +711,8 @@ int modeChoosing(sf::RenderWindow& window) {
 					   break;
 
 				case sf::Keyboard::W:
+				case sf::Keyboard::Up:
+					PlayMoveSFX();
 					if (row == 2) { // Từ OK lên Card
 						row = 1;
 					}
@@ -698,6 +723,8 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::S:
+				case sf::Keyboard::Down:
+					PlayMoveSFX();
 					if (row == 0) { // Từ Back xuống Card
 						row = 1;
 					}
@@ -707,6 +734,7 @@ int modeChoosing(sf::RenderWindow& window) {
 					break;
 
 				case sf::Keyboard::Enter:
+					PlayClickSFX();
 					if (row == 0) {
 						if (topChoice == 0) {
 							// Chọn Back -> Về menu chính
@@ -1362,12 +1390,15 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		// CHỈ cho phép chọn nút SAU KHI animation xong
 		if (animShownForResult) {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+				PlayMoveSFX();
 				buttonChoice = 0;
 			}
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+				PlayMoveSFX();
 				buttonChoice = 1;
 			}
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+				PlayClickSFX();
 				int returnValue = buttonChoice;
 				animResult = 999;
 				animShownForResult = false;
@@ -1567,17 +1598,21 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W) {
+					PlayMoveSFX();
 					selectedItem = (selectedItem + optionCount - 1) % optionCount;
 				}
 				else if (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S) {
+					PlayMoveSFX();
 					selectedItem = (selectedItem + 1) % optionCount;
 				}
 				else if (event.key.code == sf::Keyboard::Enter) {
+					PlayClickSFX();
 					// PHỤC HỒI View của game trước khi thoát
 					window.setView(gameView);
 					return selectedItem + 1;
 				}
 				else if (event.key.code == sf::Keyboard::Escape) {
+					PlayClickSFX();
 					// PHỤC HỒI View của game trước khi thoát
 					window.setView(gameView);
 					return 1; // ESC để tiếp tục
@@ -1650,17 +1685,21 @@ int opponentChoosing(sf::RenderWindow& window) {
 			if (event.type == sf::Event::KeyPressed) {
 				
 				if (event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) {
+					PlayMoveSFX();
 					choice = 0;
 				}
 				else if (event.key.code == sf::Keyboard::S || event.key.code == sf::Keyboard::Down) {
+					PlayMoveSFX();
 					choice = 1;
 				}
 				
 				else if (event.key.code == sf::Keyboard::Enter) {
+					PlayClickSFX();
 					return choice;
 				}
 				
 				else if (event.key.code == sf::Keyboard::Escape) {
+					PlayClickSFX();
 					return -1;
 				}
 			}
@@ -1765,21 +1804,27 @@ std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::V
 			{
 				auto key = event.key.code;
 				if (key == sf::Keyboard::W || key == sf::Keyboard::Up) {
+					PlayMoveSFX();
 					if (selectedControl == 1) selectedControl = 0;
 					else if (selectedControl == 0) selectedControl = 2;
 				}
 				else if (key == sf::Keyboard::S || key == sf::Keyboard::Down) {
+					PlayMoveSFX();
 					if (selectedControl == 2) selectedControl = 0;
 					else if (selectedControl == 0) selectedControl = 1;
 				}
 				else if (key == sf::Keyboard::Enter) {
+					PlayClickSFX();
 					if (selectedControl == 1) { // OK
 						return userInput;
 					}
 					else if (selectedControl == 2) return ""; // Exit
 					else if (selectedControl == 0) selectedControl = 1;
 				}
-				else if (key == sf::Keyboard::Escape) return "";
+				else if (key == sf::Keyboard::Escape) {
+					PlayClickSFX();
+					return "";
+				}
 			}
 		}
 
@@ -1879,14 +1924,20 @@ int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askCo
 			if (event.type == sf::Event::KeyPressed)
 			{
 				if (askContinue) {
-					if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left)
+					if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left) {
+						PlayMoveSFX();
 						selectedButton = 0;
-					else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right)
+					}
+					else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right) {
+						PlayMoveSFX();
 						selectedButton = 1;
+						} 
 				}
 
-				if (event.key.code == sf::Keyboard::Enter)
+				if (event.key.code == sf::Keyboard::Enter) {
+					PlayClickSFX();
 					return selectedButton; // 0: Yes/OK, 1: No
+				}
 			}
 		}
 
@@ -1989,17 +2040,22 @@ int ShowFullMemoryAlert(sf::RenderWindow& window, sf::Font& font)
 			if (event.type == sf::Event::KeyPressed)
 			{
 				
-				if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left)
+				if (event.key.code == sf::Keyboard::A || event.key.code == sf::Keyboard::Left) {
+					PlayMoveSFX();
 					choice = 0;
-				else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right)
-					choice = 1;
-
-				if (event.key.code == sf::Keyboard::Enter) {
-					return (choice == 0) ? 1 : 0;
 				}
-
-				
-				if (event.key.code == sf::Keyboard::Escape) return 0;
+				else if (event.key.code == sf::Keyboard::D || event.key.code == sf::Keyboard::Right) {
+					PlayMoveSFX();
+					choice = 1;
+				}
+				if (event.key.code == sf::Keyboard::Enter) {
+					PlayClickSFX();
+					return (choice == 0) ? 1 : 0;
+				}				
+				if (event.key.code == sf::Keyboard::Escape) {
+					PlayClickSFX();
+					return 0;
+				}
 			}
 		}
 
@@ -2189,19 +2245,23 @@ int loadGameScreen(sf::RenderWindow& window)
 			if (event.type == sf::Event::KeyPressed)
 			{
 				auto key = event.key.code;
-				if (key == sf::Keyboard::Escape)
+				if (key == sf::Keyboard::Escape) {
+					PlayClickSFX();
 					return 0;
+				}
 
 				// --- ĐIỀU HƯỚNG (GIỮ NGUYÊN) ---
 				if (!inButton)
 				{
 					if (key == sf::Keyboard::Down || key == sf::Keyboard::S)
 					{
+						PlayMoveSFX();
 						if (selectedSlot < slotsPerPage - 1)
 							selectedSlot++;
 					}
 					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W)
 					{
+						PlayMoveSFX();
 						if (selectedSlot > 0)
 							selectedSlot--;
 						else
@@ -2212,6 +2272,7 @@ int loadGameScreen(sf::RenderWindow& window)
 					}
 					else if (key == sf::Keyboard::Right || key == sf::Keyboard::D)
 					{
+
 						inButton = true;
 						lastSlot = selectedSlot;
 						selectedSlot = 5;
@@ -2221,6 +2282,7 @@ int loadGameScreen(sf::RenderWindow& window)
 				{
 					if (key == sf::Keyboard::Down || key == sf::Keyboard::S)
 					{
+						PlayMoveSFX();
 						if (selectedSlot == 8)
 						{
 							inButton = false;
@@ -2231,6 +2293,7 @@ int loadGameScreen(sf::RenderWindow& window)
 					}
 					else if (key == sf::Keyboard::Up || key == sf::Keyboard::W)
 					{
+						PlayMoveSFX();
 						if (selectedSlot == 5)
 							selectedSlot = 8;
 						else if (selectedSlot > 5)
@@ -2238,6 +2301,7 @@ int loadGameScreen(sf::RenderWindow& window)
 					}
 					else if (key == sf::Keyboard::Left || key == sf::Keyboard::A)
 					{
+						PlayMoveSFX();
 						inButton = false;
 						selectedSlot = lastSlot;
 					}
@@ -2246,6 +2310,7 @@ int loadGameScreen(sf::RenderWindow& window)
 				// --- XỬ LÝ CHỌN (ENTER) - ĐÃ THÊM LOGIC ---
 				if (key == sf::Keyboard::Enter)
 				{
+					PlayClickSFX();
 					if (!inButton)
 					{
 						// Chọn trực tiếp vào slot -> LOAD

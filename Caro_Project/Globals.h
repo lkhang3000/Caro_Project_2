@@ -23,11 +23,14 @@ extern int _movesO;
 
 extern int _matchCount;
 
-extern sf::Music _bgm;
+extern sf::Sound _sfx;
+extern sf::SoundBuffer _buttonBuffer;
+extern sf::SoundBuffer _moveBuffer;
 extern sf::SoundBuffer _winBuffer;
 extern sf::SoundBuffer _loseBuffer;
-extern sf::SoundBuffer _buttonBuffer;
-extern sf::SoundBuffer _tabBuffer;
-extern sf::Sound _sfx;
+extern sf::Music _bgm;
+extern bool _playedResultSfx;
+void PlayMoveSFX();
+void PlayClickSFX();
 
 #endif
