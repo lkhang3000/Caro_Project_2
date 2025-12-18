@@ -23,6 +23,7 @@ int main() {
     _moveBuffer.loadFromFile("Assets/audio/move_click.mp3");
     _winBuffer.loadFromFile("Assets/audio/win_sfx.mp3");
     _loseBuffer.loadFromFile("Assets/audio/lose_sfx.mp3");
+    _switchBuffer.loadFromFile("Assets/audio/tab_switch.mp3");
 
     sf::RenderWindow window(sf::VideoMode(1366, 768), "Caro", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
@@ -86,31 +87,33 @@ main_menu:
             while (window.isOpen()) {
                 if (_isPvE && !_TURN && result == 2 && !isPaused) {
                     sf::sleep(sf::milliseconds(300));
+
                     _POINT botMove = GetBotMove();
                     _currentRow = botMove.x;
                     _currentCol = botMove.y;
+
                     if (PlacePiece()) {
                         result = TestBoard(rule);
 
-                        if (!playedResultSfx && result != 2) {
-                            if (result == -1) {
-                                ++_winsX;
-                                _sfx.setBuffer(_winBuffer);
-                            }
-                            else if (result == 1) {
-                                ++_winsO;
-                                if (_isPvE)
-                                    _sfx.setBuffer(_loseBuffer);
-                                else
-                                    _sfx.setBuffer(_winBuffer);
-                            }
+                        if (result == -1 && !_playedResultSfx)
+                        {
+                            ++_winsX;
+                            DuckBGM(300.f, 10000);
+                            _sfx.setBuffer(_winBuffer);
                             _sfx.play();
-                            playedResultSfx = true;
+                            _playedResultSfx = true;
                         }
-
+                        else if (result == 1 && !_playedResultSfx)
+                        {
+                            ++_winsO;
+                            DuckBGM(300.f, 10000);
+                            _sfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                            _sfx.play();
+                            _playedResultSfx = true;
+                        }
                         _TURN = !_TURN;
                     }
-                }
+                }            
 
                 sf::Event event;
                 while (window.pollEvent(event)) {
@@ -200,6 +203,15 @@ main_menu:
                     }
                 }
 
+                if (_isBgmDucked)
+                {
+                    if (_bgmDuckClock.getElapsedTime().asMilliseconds() >= _bgmDuckDurationMs)
+                    {
+                        _bgm.setVolume(_bgmNormalVolume);
+                        _isBgmDucked = false;
+                    }
+                }
+
                 // === 4. Render Game ===
                 window.clear();
                 int drawChoice = DrawBoard(window, BOARD_SIZE, result);
@@ -221,7 +233,9 @@ main_menu:
                     _movesX = 0;
                     _movesO = 0;
                     result = 2;
-                    playedResultSfx = false;
+                    _playedResultSfx = false;
+                    _isBgmDucked = false;
+                    _bgm.setVolume(_bgmNormalVolume);
                     sf::sleep(sf::milliseconds(200));
                     sf::Event e;
                     while (window.pollEvent(e)) {

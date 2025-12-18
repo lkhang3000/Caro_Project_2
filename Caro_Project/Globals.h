@@ -2,6 +2,7 @@
 #define Globals_h
 #include "View.h"
 #include <SFML/Audio.hpp>
+#include <SFML/System/Clock.hpp>
 
 struct _POINT {
 	int x, y, c;
@@ -26,11 +27,19 @@ extern int _matchCount;
 extern sf::Sound _sfx;
 extern sf::SoundBuffer _buttonBuffer;
 extern sf::SoundBuffer _moveBuffer;
+extern sf::SoundBuffer _switchBuffer;
 extern sf::SoundBuffer _winBuffer;
 extern sf::SoundBuffer _loseBuffer;
 extern sf::Music _bgm;
 extern bool _playedResultSfx;
 void PlayMoveSFX();
 void PlayClickSFX();
+void PlaySwitchSFX();
+
+void DuckBGM(float toVolume, int ms);
+extern bool _isBgmDucked;
+extern float _bgmNormalVolume;
+extern sf::Clock _bgmDuckClock;
+extern int _bgmDuckDurationMs;
 
 #endif

@@ -686,7 +686,7 @@ int modeChoosing(sf::RenderWindow& window) {
 				switch (event.key.code) {
 				case sf::Keyboard::A:
 				case sf::Keyboard::Right:
-					PlayMoveSFX();
+					PlaySwitchSFX();
 					if (row == 1) {
 						cardChoice--;
 						if (cardChoice < 1) cardChoice = 3;
@@ -699,7 +699,7 @@ int modeChoosing(sf::RenderWindow& window) {
 
 				case sf::Keyboard::D:
 				case sf::Keyboard::Left:
-					PlayMoveSFX();
+					PlaySwitchSFX();
 					   if (row == 1) {
 						   cardChoice++;
 						   if (cardChoice > 3) cardChoice = 1;
