@@ -14,6 +14,16 @@ GameRule _rule = GameRule::FREESTYLE;
 int main() {
     FixConsoleWindow();
 
+    _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
+    _bgm.setLoop(true);
+    _bgm.setVolume(40);
+    _bgm.play();
+
+    _buttonBuffer.loadFromFile("Assets/audio/button_click.mp3");
+    _moveBuffer.loadFromFile("Assets/audio/move_click.mp3");
+    _winBuffer.loadFromFile("Assets/audio/win_sfx.mp3");
+    _loseBuffer.loadFromFile("Assets/audio/lose_sfx.mp3");
+
     sf::RenderWindow window(sf::VideoMode(1366, 768), "Caro", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
@@ -65,6 +75,9 @@ main_menu:
                 StartGame();
             }
             int result = TestBoard(rule);
+
+            bool playedResultSfx = false;
+
             if (isLoaded && result != 2) result = 2; 
 
             enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED };
@@ -80,8 +93,23 @@ main_menu:
                     _currentCol = botMove.y;
                     if (PlacePiece()) {
                         result = TestBoard(rule);
-                        if (result == -1) ++_winsX;
-                        else if (result == 1) ++_winsO;
+
+                        if (!playedResultSfx && result != 2) {
+                            if (result == -1) {
+                                ++_winsX;
+                                _sfx.setBuffer(_winBuffer);
+                            }
+                            else if (result == 1) {
+                                ++_winsO;
+                                if (_isPvE)
+                                    _sfx.setBuffer(_loseBuffer);
+                                else
+                                    _sfx.setBuffer(_winBuffer);
+                            }
+                            _sfx.play();
+                            playedResultSfx = true;
+                        }
+
                         _TURN = !_TURN;
                     }
                 }
@@ -106,15 +134,18 @@ main_menu:
 
                         switch (event.key.code) {
                         case sf::Keyboard::A:
+                            PlayMoveSFX();
                             if (gameState == BOARD_ACTIVE) MoveLeft();
                             else if (gameState == PAUSE_FOCUSED) gameState = BOARD_ACTIVE;
                             else if (gameState == SETTING_FOCUSED) gameState = PAUSE_FOCUSED;
                             break;
                         case sf::Keyboard::D:
+                            PlayMoveSFX();
                             if (gameState == BOARD_ACTIVE) MoveRight();
                             else if (gameState == PAUSE_FOCUSED) gameState = SETTING_FOCUSED;
                             break;
                         case sf::Keyboard::W:
+                            PlayMoveSFX();
                             if (gameState == BOARD_ACTIVE) {
                                 if (_currentRow == 0) {
                                     gameState = PAUSE_FOCUSED;
@@ -124,11 +155,13 @@ main_menu:
                             else gameState = BOARD_ACTIVE;
                             break;
                         case sf::Keyboard::S:
+                            PlayMoveSFX();
                             if (gameState == BOARD_ACTIVE) MoveDown();
                             else gameState = BOARD_ACTIVE;
                             break;
                         case sf::Keyboard::Enter:
                         {
+                            PlayClickSFX();
                             if (gameState == BOARD_ACTIVE) {
                                 if (PlacePiece()) {
                                     result = TestBoard(rule);
@@ -190,6 +223,7 @@ main_menu:
                     _movesX = 0;
                     _movesO = 0;
                     result = 2;
+                    playedResultSfx = false;
                     sf::sleep(sf::milliseconds(200));
                     sf::Event e;
                     while (window.pollEvent(e)) {
