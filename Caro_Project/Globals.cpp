@@ -18,3 +18,6 @@ int _movesX = 0;
 int _movesO = 0;
 
 int _matchCount = 1;
+
+sf::String _playerXName;
+sf::String _playerOName;

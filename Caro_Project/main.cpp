@@ -17,17 +17,19 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(1366, 768), "Caro", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
+    // Move font loading to before main menu loop so it is available everywhere
+    sf::Font font;
+    if (!font.loadFromFile("Assets/font/regular.ttf")) {
+        std::cerr << "Không thể tải font!\n";
+    }
+
 main_menu:
     while (window.isOpen()) {
         int menuChoice = mainScreen(window);
 
         
         auto RunGameLoop = [&](bool isLoaded) {
-            // === 1. Tải Font và Assets ===
-            sf::Font font;
-            if (!font.loadFromFile("Assets/font/regular.ttf")) {
-                std::cerr << "Không thể tải font!\n";
-            }
+            // Remove font loading from here, since it's now loaded above
 
             sf::Texture settingOffT, settingOnT, pauseOffT, pauseOnT, playOnT, backOnT, backOffT;
             if (!settingOffT.loadFromFile("Assets/button/setting2_button_off.png")) {}
@@ -240,9 +242,15 @@ main_menu:
         case 2: // New Game
         {
             int opponent = opponentChoosing(window);
-            if (opponent == -1) break;
+            if (opponent == -1) break;  // Back to menu
             if (opponent == 1) _isPvE = true;
             else _isPvE = false;
+
+            auto [nameX, nameO] = enterPlayerNames(window, font);
+
+            _playerXName = sf::String::fromUtf8(nameX.begin(), nameX.end());
+            _playerOName = sf::String::fromUtf8(nameO.begin(), nameO.end());
+
 
             RunGameLoop(false); // Chạy game mới
             break;

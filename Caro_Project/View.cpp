@@ -896,6 +896,277 @@ int modeChoosing(sf::RenderWindow& window) {
 	return -1;
 }
 
+std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, sf::Font& font)
+{
+	// Load textures
+	sf::Texture backgroundT, nameOnT, nameOffT, okOnT, okOffT;
+	nameOnT.loadFromFile("Assets/background/player_name.png");
+	nameOffT.loadFromFile("Assets/background/player_name_off.png");
+	okOnT.loadFromFile("Assets/button/save_ok_on.png");
+	okOffT.loadFromFile("Assets/button/save_ok_off.png");
+	if (!backgroundT.loadFromFile("Assets/background/background_menu.png")) {
+		std::cerr << "Failed to load background\n";
+	}
+
+	sf::Sprite bg(backgroundT);
+	bg.setScale(scaleX, scaleY);
+
+	// Sprite for the name entry form
+	sf::Sprite nameSprite(nameOnT);
+	nameSprite.setScale(scaleX, scaleY);
+	nameSprite.setPosition(0.f, 0.f);
+
+	// OK button sprite
+	sf::Sprite okButton(okOffT);
+	okButton.setScale(4.32222f, 4.32222f);
+	okButton.setPosition(-15.f, 10.f);
+
+	sf::String nameX = "";
+	sf::String nameO = "";
+	sf::Clock cursorClock;
+
+	// ============ Step 1: Enter Player 1's name ============
+	{
+		sf::Text labelX(L"Nhập tên người chơi 1", font, 40);
+		labelX.setFillColor(sf::Color(255, 162, 50));
+		labelX.setPosition(480.f, 150.f);
+
+		sf::Text inputX("", font, 35);
+		inputX.setFillColor(sf::Color(80, 48, 32));
+		inputX.setPosition(560.f, 310.f);
+
+		int selectedField = 0; // 0: Input, 1: OK
+		bool finishedInput = false;
+		bool ignoreNextTextInput = false;
+
+		while (window.isOpen() && !finishedInput) {
+			sf::Event event;
+			while (window.pollEvent(event)) {
+				if (event.type == sf::Event::Closed) {
+					window.close();
+					return { "", "" };
+				}
+
+				// Process KeyPressed FIRST to set ignore flag
+				if (event.type == sf::Event::KeyPressed) {
+					auto key = event.key.code;
+
+					// Navigate down to OK button
+					if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
+						selectedField = 1;
+						ignoreNextTextInput = true;
+					}
+					// Navigate up to input field
+					else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
+						selectedField = 0;
+						ignoreNextTextInput = true;
+					}
+					// Confirm
+					else if (key == sf::Keyboard::Enter) {
+						ignoreNextTextInput = true;
+						if (selectedField == 1) {
+							// Trim whitespace and set default if empty
+							std::string trimmed = nameX.toAnsiString();
+							// Xóa khoảng trắng đầu cuối
+							size_t start = trimmed.find_first_not_of(" \t\n\r");
+							size_t end = trimmed.find_last_not_of(" \t\n\r");
+
+							if (start == std::string::npos || trimmed.empty()) {
+								nameX = L"Người chơi 1";
+							}
+							finishedInput = true;
+						}
+						else {
+							selectedField = 1; // Move to OK
+						}
+					}
+					// Cancel
+					else if (key == sf::Keyboard::Escape) {
+						return { "", "" };
+					}
+				}
+
+				// Process TextEntered AFTER KeyPressed
+				if (event.type == sf::Event::TextEntered) {
+					if (ignoreNextTextInput) {
+						ignoreNextTextInput = false;
+						continue;
+					}
+					if (selectedField == 0) {
+						// Backspace
+						if (event.text.unicode == 8 && !nameX.isEmpty()) {
+							nameX.erase(nameX.getSize() - 1);
+						}
+						// Valid characters - cho phép tất cả ký tự Unicode
+						else if (event.text.unicode > 31 && event.text.unicode != 127 && nameX.getSize() < 18) {
+							nameX += event.text.unicode;
+						}
+					}
+				}
+			}
+
+			// Update cursor blinking
+			bool showCursor = (selectedField == 0) && (cursorClock.getElapsedTime().asSeconds() < 0.5f);
+			if (cursorClock.getElapsedTime().asSeconds() > 1.f) {
+				cursorClock.restart();
+			}
+
+			// Update display text
+			sf::String displayText = nameX;
+			if (showCursor) displayText += "|";
+			inputX.setString(displayText);
+
+			// Update textures: when input is selected, form is bright (On)
+			// when OK is selected, OK button is bright (On)
+			if (selectedField == 0) {
+				nameSprite.setTexture(nameOnT);   // Input selected -> form bright
+				okButton.setTexture(okOffT);       // OK not selected -> OK dim
+			}
+			else {
+				nameSprite.setTexture(nameOffT);   // Input not selected -> form dim
+				okButton.setTexture(okOnT);        // OK selected -> OK bright
+			}
+
+			// Render
+			window.clear();
+			window.draw(bg);
+			window.draw(nameSprite);
+			window.draw(labelX);
+			window.draw(inputX);
+			window.draw(okButton);
+			window.display();
+		}
+	}
+
+	// ============ Set Player 2's name based on mode ============
+
+
+	if (_isPvE) {
+		nameO = L"Máy";
+
+	}
+	else {
+		// ============ Step 2: Enter Player 2's name (only if not PvE) ============
+		{
+			sf::Text labelO(L"Nhập tên người chơi 2", font, 40);
+			labelO.setFillColor(sf::Color(255, 162, 50));
+			labelO.setPosition(480.f, 150.f);
+
+			sf::Text inputO("", font, 35);
+			inputO.setFillColor(sf::Color(80, 48, 32));
+			inputO.setPosition(560.f, 310.f);
+
+			int selectedField = 0; // 0: Input, 1: OK
+			bool finishedInput = false;
+			bool ignoreNextTextInput = false;
+
+			cursorClock.restart(); // Reset cursor clock for Player 2
+
+			while (window.isOpen() && !finishedInput) {
+				sf::Event event;
+				while (window.pollEvent(event)) {
+					if (event.type == sf::Event::Closed) {
+						window.close();
+						return { "", "" };
+					}
+
+					// Process KeyPressed FIRST to set ignore flag
+					if (event.type == sf::Event::KeyPressed) {
+						auto key = event.key.code;
+
+						// Navigate down to OK button
+						if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
+							selectedField = 1;
+							ignoreNextTextInput = true;
+						}
+						// Navigate up to input field
+						else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
+							selectedField = 0;
+							ignoreNextTextInput = true;
+						}
+						// Confirm
+						else if (key == sf::Keyboard::Enter) {
+							ignoreNextTextInput = true;
+							if (selectedField == 1) {
+								// Trim whitespace and set default if empty
+								std::string trimmed = nameO.toAnsiString();
+								size_t start = trimmed.find_first_not_of(" \t\n\r");
+								size_t end = trimmed.find_last_not_of(" \t\n\r");
+
+								if (start == std::string::npos || trimmed.empty()) {
+									nameO = L"Người chơi 2";
+								}
+								finishedInput = true;
+							}
+							else {
+								selectedField = 1; // Move to OK
+							}
+						}
+						// Cancel
+						else if (key == sf::Keyboard::Escape) {
+							return { "", "" };
+						}
+					}
+
+					// Process TextEntered AFTER KeyPressed
+					if (event.type == sf::Event::TextEntered) {
+						if (ignoreNextTextInput) {
+							ignoreNextTextInput = false;
+							continue;
+						}
+						if (selectedField == 0) {
+							// Backspace
+							if (event.text.unicode == 8 && !nameO.isEmpty()) {
+								nameO.erase(nameO.getSize() - 1);
+							}
+							// Valid characters - cho phép tất cả ký tự Unicode
+							else if (event.text.unicode > 31 && event.text.unicode != 127 && nameO.getSize() < 18) {
+								nameO += event.text.unicode;
+							}
+						}
+					}
+				}
+
+				// Update cursor blinking
+				bool showCursor = (selectedField == 0) && (cursorClock.getElapsedTime().asSeconds() < 0.5f);
+				if (cursorClock.getElapsedTime().asSeconds() > 1.f) {
+					cursorClock.restart();
+				}
+
+				// Update display text
+				sf::String displayText = nameO;
+				if (showCursor) displayText += "|";
+				inputO.setString(displayText);
+
+				// Update textures: when input is selected, form is bright (On)
+				// when OK is selected, OK button is bright (On)
+				if (selectedField == 0) {
+					nameSprite.setTexture(nameOnT);   // Input selected -> form bright
+					okButton.setTexture(okOffT);       // OK not selected -> OK dim
+				}
+				else {
+					nameSprite.setTexture(nameOffT);   // Input not selected -> form dim
+					okButton.setTexture(okOnT);        // OK selected -> OK bright
+				}
+
+				// Render
+				window.clear();
+				window.draw(bg);
+				window.draw(nameSprite);
+				window.draw(labelO);
+				window.draw(inputO);
+				window.draw(okButton);
+				window.display();
+			}
+		}
+	}
+
+	// Convert sf::String to std::string
+	std::string nameXStr = nameX.toAnsiString();
+	std::string nameOStr = nameO.toAnsiString();
+	return { nameXStr, nameOStr };
+}
+
 void GotoXY(int x, int y) {
 	COORD coord;
 	coord.X = x;
@@ -926,10 +1197,10 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 	drawAfterT.loadFromFile("Assets/playing/drawAfter.png");
 
 	// button
-	outGameT.loadFromFile("Assets/button/exit_game.png");
-	outGameONT.loadFromFile("Assets/button/exit_game_on.png");
-	continueGameT.loadFromFile("Assets/button/continue_game.png");
-	continueGameONT.loadFromFile("Assets/button/continue_game_on.png");
+	outGameT.loadFromFile("Assets/button/exit_game_on.png");
+	outGameONT.loadFromFile("Assets/button/exit_game.png");
+	continueGameT.loadFromFile("Assets/button/continue_game_on.png");
+	continueGameONT.loadFromFile("Assets/button/continue_game.png");
 
 	// frames X / O
 	frameX_T.loadFromFile("Assets/playing/frameX.png");
@@ -1290,7 +1561,7 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesXText.setString(
 			sf::String(L"Số lượt: ") + std::to_wstring(_movesX)
 		);
-		movesXText.setPosition(textAreaX + 15.0f, textAreaY + 50.0f);
+		movesXText.setPosition(textAreaX + 25.0f, textAreaY + 67.0f);
 
 		sf::Text winsXText;
 		winsXText.setFont(font);
@@ -1299,7 +1570,7 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		winsXText.setString(
 			sf::String(L"Số thắng: ") + std::to_wstring(_winsX)
 		);
-		winsXText.setPosition(textAreaX + 15.0f, textAreaY + 85.0f);
+		winsXText.setPosition(textAreaX + 25.0f, textAreaY + 98.0f);
 
 		window.draw(titleX);
 		window.draw(movesXText);
@@ -1325,7 +1596,7 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		movesOText.setString(
 			sf::String(L"Số lượt: ") + std::to_wstring(_movesO)
 		);
-		movesOText.setPosition(textAreaOX + 85.0f, textAreaOY + 50.0f);
+		movesOText.setPosition(textAreaOX + 95.0f, textAreaOY + 74.0f);
 
 		sf::Text winsOText;
 		winsOText.setFont(font);
@@ -1334,11 +1605,54 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 		winsOText.setString(
 			sf::String(L"Số thắng: ") + std::to_wstring(_winsO)
 		);
-		winsOText.setPosition(textAreaOX + 85.0f, textAreaOY + 85.0f);
+		winsOText.setPosition(textAreaOX + 95.0f, textAreaOY + 108.0f);
 
 		window.draw(titleO);
 		window.draw(movesOText);
 		window.draw(winsOText);
+
+		// ===== TÊN NGƯỜI CHƠI X (Player 1) =====
+		sf::Text playerXName;
+		playerXName.setFont(font);
+		playerXName.setCharacterSize(28);
+		playerXName.setStyle(sf::Text::Bold);
+		playerXName.setFillColor(textColor);
+
+		// Lấy tên từ biến toàn cục và chuyển sang sf::String
+		sf::String nameX = sf::String::fromUtf8(_playerXName.begin(), _playerXName.end());
+		if (nameX.getSize() > 12) {
+			nameX = sf::String(nameX.substring(0, 12)) + "...";
+		}
+		playerXName.setString(nameX);
+
+		sf::FloatRect boundsX = playerXName.getLocalBounds();
+		playerXName.setPosition(
+			textAreaX + 15.0f + (140.0f - boundsX.width) / 2.0f,
+			textAreaY + 30.0f
+		);
+
+		// ===== TÊN NGƯỜI CHƠI O (Player 2) =====
+		sf::Text playerOName;
+		playerOName.setFont(font);
+		playerOName.setCharacterSize(28);
+		playerOName.setStyle(sf::Text::Bold);
+		playerOName.setFillColor(textColor);
+
+		sf::String nameO = sf::String::fromUtf8(_playerOName.begin(), _playerOName.end());
+		if (nameO.getSize() > 12) {
+			nameO = sf::String(nameO.substring(0, 12)) + "...";
+		}
+		playerOName.setString(nameO);
+
+		sf::FloatRect boundsO = playerOName.getLocalBounds();
+		playerOName.setPosition(
+			textAreaOX + 95.0f + (140.0f - boundsO.width) / 2.0f,
+			textAreaOY + 38.0f
+		);
+
+		// VẼ TÊN
+		window.draw(playerXName);
+		window.draw(playerOName);
 	}
 
 
@@ -1355,17 +1669,17 @@ int DrawBoard(sf::RenderWindow& window, int n, int result) {
 
 	if (isTerminal) {
 		continueGameS.setScale(barScale, barScale);
-		continueGameS.setPosition(barX - 370.0f, barY - 196.0f);
+		continueGameS.setPosition(barX + 90.0f, barY - 46.0f);
 		outGameS.setScale(barScale, barScale);
-		outGameS.setPosition(barX + 90.0f, barY - 225.0f);
+		outGameS.setPosition(barX + 70.0f, barY - 49.0f);
 
 		// CHỈ cho phép chọn nút SAU KHI animation xong
 		if (animShownForResult) {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-				buttonChoice = 0;
+				buttonChoice = 1;
 			}
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-				buttonChoice = 1;
+				buttonChoice = 0;
 			}
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
 				int returnValue = buttonChoice;

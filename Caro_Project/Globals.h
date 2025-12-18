@@ -22,4 +22,7 @@ extern int _movesX;
 extern int _movesO;  
 
 extern int _matchCount;
+
+extern sf::String _playerXName;
+extern sf::String _playerOName;
 #endif

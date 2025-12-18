@@ -16,6 +16,7 @@ using namespace std;
 void GotoXY(int x, int y);
 void FixConsoleWindow();
 int DrawBoard(sf::RenderWindow& window, int n, int result = 2);
+std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, sf::Font& font);
 int mainScreen(sf::RenderWindow& window);
 int AskContinue();
 int ProcessFinish(int pWhoWin);
