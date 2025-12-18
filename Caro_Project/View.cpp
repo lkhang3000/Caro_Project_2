@@ -1638,40 +1638,34 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 }
 
 int opponentChoosing(sf::RenderWindow& window) {
-	sf::Font font;
-	if (!font.loadFromFile("Assets/font/regular.ttf")) {
-		std::cerr << "Khong tai duoc font!\n";
-	}
-
+	// 1. Tải Background
 	sf::Texture backgroundT;
-	if (!backgroundT.loadFromFile("Assets/background/background_menu.png")) {
-	}
+	backgroundT.loadFromFile("Assets/background/background_menu.png");
 	sf::Sprite bg(backgroundT);
-	bg.setScale(4.26875f, 4.267f); 
+	bg.setScale(scaleX, scaleY); // Sử dụng scale chuẩn của project
 
+	// 2. Tải Texture cho 2 nút (Thay tên file đúng với thực tế của bạn)
+	sf::Texture pvpT, pveT;
+	if (!pvpT.loadFromFile("Assets/button/pvp.png")) std::cerr << "Loi pvp_button\n";
+	if (!pveT.loadFromFile("Assets/button/pve.png")) std::cerr << "Loi pve_button\n";
 
-	sf::Text titleText, pvpText, pveText;
+	sf::Sprite pvpS(pvpT), pveS(pveT);
 
+	// 3. Thiết lập Scale và Origin
+	pvpS.setScale(scaleX, scaleY);
+	pveS.setScale(scaleX, scaleY);
 
-	titleText.setFont(font);
-	titleText.setString("CHON CHE DO CHOI");
-	titleText.setCharacterSize(50);
-	titleText.setFillColor(sf::Color(80, 48, 32)); 
-	titleText.setStyle(sf::Text::Bold);
+	// Đặt Origin vào tâm ảnh để căn chỉnh chính xác hơn
+	pvpS.setOrigin(pvpT.getSize().x / 2.f, pvpT.getSize().y / 2.f);
+	pveS.setOrigin(pveT.getSize().x / 2.f, pveT.getSize().y / 2.f);
 
-	titleText.setPosition(480.f, 200.f);
+	// 4. Căn chỉnh vị trí dựa trên ảnh mẫu (Dịch sang phải tâm màn hình một chút)
+	float centerX = 1366.f / 2.f + 60.f; // Dịch sang phải 120px so với trục giữa
+	float pvpY = 445.f; // Vị trí nút Chơi với người
+	float pveY = 570.f; // Vị trí nút Chơi với máy
 
-	// Setup lựa chọn 1: PvP
-	pvpText.setFont(font);
-	pvpText.setString("NGUOI DAU NGUOI (PvP)");
-	pvpText.setCharacterSize(40);
-	pvpText.setPosition(450.f, 350.f);
-
-	// Setup lựa chọn 2: PvE
-	pveText.setFont(font);
-	pveText.setString("NGUOI DAU MAY (PvE)");
-	pveText.setCharacterSize(40);
-	pveText.setPosition(450.f, 450.f);
+	pvpS.setPosition(centerX, pvpY);
+	pveS.setPosition(centerX, pveY);
 
 	int choice = 0; // 0: PvP, 1: PvE
 
@@ -1683,7 +1677,6 @@ int opponentChoosing(sf::RenderWindow& window) {
 				return -1;
 			}
 			if (event.type == sf::Event::KeyPressed) {
-				
 				if (event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) {
 					PlayMoveSFX();
 					choice = 0;
@@ -1692,12 +1685,10 @@ int opponentChoosing(sf::RenderWindow& window) {
 					PlayMoveSFX();
 					choice = 1;
 				}
-				
 				else if (event.key.code == sf::Keyboard::Enter) {
 					PlayClickSFX();
 					return choice;
 				}
-				
 				else if (event.key.code == sf::Keyboard::Escape) {
 					PlayClickSFX();
 					return -1;
@@ -1705,26 +1696,26 @@ int opponentChoosing(sf::RenderWindow& window) {
 			}
 		}
 
-		
+		// 5. Hiệu ứng mờ đen (Dimming) giống như code cũ
+		// Nút được chọn để màu trắng (255, 255, 255), nút không chọn để màu xám tối
 		if (choice == 0) {
-			pvpText.setFillColor(sf::Color::Red);       
-			pveText.setFillColor(sf::Color(80, 48, 32));
+			pvpS.setColor(sf::Color::White);
+			pveS.setColor(sf::Color(100, 100, 100, 255)); // Mờ đen nút dưới
 		}
 		else {
-			pvpText.setFillColor(sf::Color(80, 48, 32));
-			pveText.setFillColor(sf::Color::Red);
+			pvpS.setColor(sf::Color(100, 100, 100, 255)); // Mờ đen nút trên
+			pveS.setColor(sf::Color::White);
 		}
 
-		
 		window.clear();
 		window.draw(bg);
-		window.draw(titleText);
-		window.draw(pvpText);
-		window.draw(pveText);
+		window.draw(pvpS);
+		window.draw(pveS);
 		window.display();
 	}
 	return -1;
 }
+
 
 // Save + Load
 std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::View& restoreView, std::string initialText)
