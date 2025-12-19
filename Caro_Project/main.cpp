@@ -324,9 +324,8 @@ main_menu:
             else _isPvE = false;
 
             auto [nameX, nameO] = enterPlayerNames(window, font);
-
-            _playerXName = sf::String::fromUtf8(nameX.begin(), nameX.end());
-            _playerOName = sf::String::fromUtf8(nameO.begin(), nameO.end());
+            _playerXName = nameX;
+            _playerOName = nameO;
 
 
             RunGameLoop(false); // Chạy game mới
