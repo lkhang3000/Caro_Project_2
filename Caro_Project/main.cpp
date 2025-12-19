@@ -120,6 +120,17 @@ main_menu:
 
                             _playedResultSfx = true;
                         }
+                        else if (result == 0 && !_playedResultSfx)
+                        {
+                            DuckBGM(10.f, 4000);
+
+                            _resultSfx.stop();
+                            _resultSfx.setBuffer(_winBuffer); // dùng win
+                            _resultSfx.setVolume(100.f * GetSoundScale());
+                            _resultSfx.play();
+
+                            _playedResultSfx = true;
+                        }
                         _TURN = !_TURN;
                     }
                 }            
@@ -193,6 +204,17 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                                        _resultSfx.setVolume(100.f * GetSoundScale());
+                                        _resultSfx.play();
+
+                                        _playedResultSfx = true;
+                                    }
+                                    else if (result == 0 && !_playedResultSfx)
+                                    {
+                                        DuckBGM(10.f, 4000);
+
+                                        _resultSfx.stop();
+                                        _resultSfx.setBuffer(_winBuffer); // dùng win
                                         _resultSfx.setVolume(100.f * GetSoundScale());
                                         _resultSfx.play();
 
