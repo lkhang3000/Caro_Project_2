@@ -24,6 +24,9 @@ extern int _movesO;
 
 extern int _matchCount;
 
+extern sf::String _playerXName;
+extern sf::String _playerOName;
+
 extern sf::Sound _sfx;
 extern sf::SoundBuffer _buttonBuffer;
 extern sf::SoundBuffer _moveBuffer;

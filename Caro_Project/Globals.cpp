@@ -20,6 +20,9 @@ int _movesO = 0;
 
 int _matchCount = 1;
 
+
+sf::String _playerXName;
+sf::String _playerOName;
 sf::Music _bgm;
 sf::SoundBuffer _winBuffer;
 sf::SoundBuffer _loseBuffer;
