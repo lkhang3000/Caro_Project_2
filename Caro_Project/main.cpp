@@ -100,17 +100,23 @@ main_menu:
                         if (result == -1 && !_playedResultSfx)
                         {
                             ++_winsX;
-                            DuckBGM(300.f, 10000);
-                            _sfx.setBuffer(_winBuffer);
-                            _sfx.play();
+                            DuckBGM(10.f, 4000);
+
+                            _resultSfx.stop();
+                            _resultSfx.setBuffer(_winBuffer);
+                            _resultSfx.play();
+
                             _playedResultSfx = true;
                         }
                         else if (result == 1 && !_playedResultSfx)
                         {
                             ++_winsO;
-                            DuckBGM(300.f, 10000);
-                            _sfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
-                            _sfx.play();
+                            DuckBGM(10.f, 4000);
+
+                            _resultSfx.stop();
+                            _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                            _resultSfx.play();
+
                             _playedResultSfx = true;
                         }
                         _TURN = !_TURN;
@@ -168,8 +174,27 @@ main_menu:
                             if (gameState == BOARD_ACTIVE) {
                                 if (PlacePiece()) {
                                     result = TestBoard(rule);
-                                    if (result == -1) ++_winsX;
-                                    else if (result == 1) ++_winsO;
+
+                                    if (result == -1 && !_playedResultSfx) {
+                                        ++_winsX;
+                                        DuckBGM(10.f, 4000);
+
+                                        _resultSfx.stop();
+                                        _resultSfx.setBuffer(_winBuffer);
+                                        _resultSfx.play();
+
+                                        _playedResultSfx = true;
+                                    }
+                                    else if (result == 1 && !_playedResultSfx) {
+                                        ++_winsO;
+                                        DuckBGM(10.f, 4000);
+
+                                        _resultSfx.stop();
+                                        _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                                        _resultSfx.play();
+
+                                        _playedResultSfx = true;
+                                    }
                                     _TURN = !_TURN;
                                 }
                             }

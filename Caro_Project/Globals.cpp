@@ -29,40 +29,35 @@ sf::SoundBuffer _loseBuffer;
 sf::SoundBuffer _buttonBuffer;
 sf::SoundBuffer _moveBuffer;
 sf::SoundBuffer _switchBuffer;
-sf::Sound _sfx;
+sf::Sound _uiSfx;
+sf::Sound _resultSfx;
 bool _playedResultSfx = false;
 
 void PlayMoveSFX() {
     if (_moveBuffer.getSampleCount() == 0) return;
-
-    _sfx.stop();
-    _sfx.setBuffer(_moveBuffer);
-    _sfx.play();
+    _uiSfx.stop();
+    _uiSfx.setBuffer(_moveBuffer);
+    _uiSfx.play();
 }
 
 void PlayClickSFX() {
     if (_buttonBuffer.getSampleCount() == 0) return;
-
-    _sfx.stop();
-    _sfx.setBuffer(_buttonBuffer);
-    _sfx.play();
+    _uiSfx.stop();
+    _uiSfx.setBuffer(_buttonBuffer);
+    _uiSfx.play();
 }
 
 void PlaySwitchSFX() {
-    if (_buttonBuffer.getSampleCount() == 0) return;
-
-    _sfx.stop();
-    _sfx.setBuffer(_switchBuffer);
-    _sfx.play();
+    if (_moveBuffer.getSampleCount() == 0) return;
+    _uiSfx.stop();
+    _uiSfx.setBuffer(_switchBuffer);
+    _uiSfx.play();
 }
 
-void DuckBGM(float duckVolume, int durationMs)
+void DuckBGM(float targetVolume, int durationMs)
 {
-    if (!_bgm.getStatus() == sf::Music::Playing) return;
-
-    _bgmNormalVolume = _bgm.getVolume();
-    _bgm.setVolume(duckVolume);
-
+    _bgmNormalVolume = _bgm.getVolume();   // luôn lấy lại volume
+    _bgm.setVolume(targetVolume);
     _bgmDuckDurationMs = durationMs;
     _bgmDuckClock.restart();
     _isBgmDucked = true;
