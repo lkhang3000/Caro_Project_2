@@ -244,6 +244,30 @@ int mainScreen(sf::RenderWindow& window) {
 void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 	enum VolumeLevel { MUTED, LOW, MEDIUM, MAX };
 
+	auto MapSoundLevel = [&](int level) -> SoundQuality
+		{
+			switch (level)
+			{
+			case MUTED:  return SOUND_MUTED;
+			case LOW:    return SOUND_LOW;
+			case MEDIUM: return SOUND_MEDIUM;
+			case MAX:    return SOUND_HIGH;
+			default:     return SOUND_HIGH;
+			}
+		};
+
+	auto MapQualityToLevel = [&](SoundQuality q) -> int
+		{
+			switch (q)
+			{
+			case SOUND_MUTED:  return MUTED;
+			case SOUND_LOW:    return LOW;
+			case SOUND_MEDIUM: return MEDIUM;
+			case SOUND_HIGH:   return MAX;
+			default:           return MEDIUM;
+			}
+		};
+
 	// ==== NÚT EXIT (X) ====
 	sf::Texture tabExitT, tabExitDarkT;
 	if (!tabExitDarkT.loadFromFile("Assets/button/exit_dark.png")) std::cerr << "Failed load exit_dark\n";
@@ -270,8 +294,8 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 	bg.setPosition(0, 0);
 
 	// CÀI ĐẶT ÂM THANH
-	int soundLevel = MEDIUM;
-	int affectLevel = MEDIUM;
+	int soundLevel = MapQualityToLevel(_bgmQuality);
+	int affectLevel = MapQualityToLevel(_sfxQuality);
 	int soundChoice = 0; // 0 = sound, 1 = effect
 	bool editing = false; // Enter toggles edit mode for the focused control
 
@@ -360,6 +384,7 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) {
 				PlayClickSFX();
+				_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
 				return;
 			}
 			if (event.type == sf::Event::KeyPressed) {
@@ -369,13 +394,17 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 				// ESC (optional) keeps previous behavior: exit settings
 				if (key == sf::Keyboard::Escape) {
 					PlayClickSFX();
+					_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
 					return;
 				}
 
 				// ENTER: if Exit is selected exit; otherwise toggle edit mode in audio tab
 				if (key == sf::Keyboard::Enter) {
 					PlayClickSFX();
-					if (tabChoice == 4) return; // Exit button selected
+					if (tabChoice == 4) {
+						_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+						return;// Exit button selected
+					}
 					if (tabChoice == 0) {
 						editing = !editing; // toggle editing mode for focused control
 					}
@@ -400,10 +429,16 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 					PlayMoveSFX();
 					if (tabChoice == 0 && editing) {
 						// decrease focused value
-						if (soundChoice == 0)
+						if (soundChoice == 0) {
 							soundLevel = std::max(static_cast<int>(MUTED), soundLevel - 1);
-						else
+							_bgmQuality = MapSoundLevel(soundLevel);
+							_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+							_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+						}
+						else {
 							affectLevel = std::max(static_cast<int>(MUTED), affectLevel - 1);
+							_sfxQuality = MapSoundLevel(affectLevel);
+						}
 					}
 					else {
 						// move to previous tab
@@ -416,10 +451,16 @@ void handleSettings(sf::RenderWindow& window, sf::Font& font) {
 					PlayMoveSFX();
 					if (tabChoice == 0 && editing) {
 						// increase focused value
-						if (soundChoice == 0)
+						if (soundChoice == 0) {
 							soundLevel = std::min(static_cast<int>(MAX), soundLevel + 1);
-						else
+							_bgmQuality = MapSoundLevel(soundLevel);
+							_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+							_bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+						}
+						else {
 							affectLevel = std::min(static_cast<int>(MAX), affectLevel + 1);
+							_sfxQuality = MapSoundLevel(affectLevel);
+						}
 					}
 					else {
 						// move to next tab

@@ -47,4 +47,20 @@ extern float _bgmNormalVolume;
 extern sf::Clock _bgmDuckClock;
 extern int _bgmDuckDurationMs;
 
+enum SoundQuality {
+    SOUND_HIGH,
+    SOUND_MEDIUM,
+    SOUND_LOW,
+    SOUND_MUTED
+};
+
+extern SoundQuality _soundQuality;
+extern SoundQuality _bgmQuality;
+extern SoundQuality _sfxQuality;
+
+// helper scale
+float GetSoundScale();
+float GetBgmScale();
+float GetSfxScale();
+
 #endif

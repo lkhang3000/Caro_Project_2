@@ -16,7 +16,7 @@ int main() {
 
     _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
     _bgm.setLoop(true);
-    _bgm.setVolume(40);
+    _bgm.setVolume(40.f * GetBgmScale());
     _bgm.play();
 
     _buttonBuffer.loadFromFile("Assets/audio/button_click.mp3");
@@ -101,9 +101,9 @@ main_menu:
                         {
                             ++_winsX;
                             DuckBGM(10.f, 4000);
-
                             _resultSfx.stop();
                             _resultSfx.setBuffer(_winBuffer);
+                            _resultSfx.setVolume(100.f * GetSoundScale());
                             _resultSfx.play();
 
                             _playedResultSfx = true;
@@ -115,6 +115,7 @@ main_menu:
 
                             _resultSfx.stop();
                             _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                            _resultSfx.setVolume(100.f * GetSoundScale());
                             _resultSfx.play();
 
                             _playedResultSfx = true;
@@ -181,6 +182,7 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer);
+                                        _resultSfx.setVolume(100.f * GetSoundScale());
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
@@ -191,6 +193,7 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                                        _resultSfx.setVolume(100.f * GetSoundScale());
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
@@ -202,6 +205,7 @@ main_menu:
                             else if (gameState == SETTING_FOCUSED) {
                                 handleSettings(window, font);
                                 gameState = BOARD_ACTIVE;
+                                _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
                             }
                             else if (gameState == PAUSE_FOCUSED) {
                                 isPaused = true;
@@ -234,7 +238,7 @@ main_menu:
                 {
                     if (_bgmDuckClock.getElapsedTime().asMilliseconds() >= _bgmDuckDurationMs)
                     {
-                        _bgm.setVolume(_bgmNormalVolume);
+                        _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
                         _isBgmDucked = false;
                     }
                 }
@@ -262,7 +266,7 @@ main_menu:
                     result = 2;
                     _playedResultSfx = false;
                     _isBgmDucked = false;
-                    _bgm.setVolume(_bgmNormalVolume);
+                    _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
                     sf::sleep(sf::milliseconds(200));
                     sf::Event e;
                     while (window.pollEvent(e)) {

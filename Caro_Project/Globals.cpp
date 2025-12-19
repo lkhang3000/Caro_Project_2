@@ -37,6 +37,7 @@ void PlayMoveSFX() {
     if (_moveBuffer.getSampleCount() == 0) return;
     _uiSfx.stop();
     _uiSfx.setBuffer(_moveBuffer);
+    _uiSfx.setVolume(100.f * GetSfxScale());
     _uiSfx.play();
 }
 
@@ -44,6 +45,7 @@ void PlayClickSFX() {
     if (_buttonBuffer.getSampleCount() == 0) return;
     _uiSfx.stop();
     _uiSfx.setBuffer(_buttonBuffer);
+    _uiSfx.setVolume(100.f * GetSfxScale());
     _uiSfx.play();
 }
 
@@ -51,13 +53,14 @@ void PlaySwitchSFX() {
     if (_moveBuffer.getSampleCount() == 0) return;
     _uiSfx.stop();
     _uiSfx.setBuffer(_switchBuffer);
+    _uiSfx.setVolume(100.f * GetSfxScale());
     _uiSfx.play();
 }
 
 void DuckBGM(float targetVolume, int durationMs)
 {
     _bgmNormalVolume = _bgm.getVolume();   // luôn lấy lại volume
-    _bgm.setVolume(targetVolume);
+    _bgm.setVolume(targetVolume * GetBgmScale());
     _bgmDuckDurationMs = durationMs;
     _bgmDuckClock.restart();
     _isBgmDucked = true;
@@ -67,3 +70,43 @@ bool _isBgmDucked = false;
 float _bgmNormalVolume = 40.f;
 sf::Clock _bgmDuckClock;
 int _bgmDuckDurationMs = 0;
+
+SoundQuality _soundQuality = SOUND_HIGH;
+SoundQuality _bgmQuality = SOUND_HIGH;
+SoundQuality _sfxQuality = SOUND_HIGH;
+
+float GetSoundScale()
+{
+    switch (_soundQuality)
+    {
+    case SOUND_HIGH:   return 1.0f;
+    case SOUND_MEDIUM: return 0.6f;
+    case SOUND_LOW:    return 0.3f;
+    case SOUND_MUTED:  return 0.0f;
+    default:           return 1.0f;
+    }
+}
+
+float GetBgmScale()
+{
+    switch (_bgmQuality)
+    {
+    case SOUND_MUTED:  return 0.f;
+    case SOUND_LOW:    return 0.3f;
+    case SOUND_MEDIUM: return 0.6f;
+    case SOUND_HIGH:   return 1.f;
+    }
+    return 1.f;
+}
+
+float GetSfxScale()
+{
+    switch (_sfxQuality)
+    {
+    case SOUND_MUTED:  return 0.f;
+    case SOUND_LOW:    return 0.3f;
+    case SOUND_MEDIUM: return 0.6f;
+    case SOUND_HIGH:   return 1.f;
+    }
+    return 1.f;
+}
