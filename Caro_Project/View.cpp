@@ -981,16 +981,19 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 
 					// Navigate down to OK button
 					if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
+						PlayMoveSFX();
 						selectedField = 1;
 						ignoreNextTextInput = true;
 					}
 					// Navigate up to input field
 					else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
+						PlayMoveSFX();
 						selectedField = 0;
 						ignoreNextTextInput = true;
 					}
 					// Confirm
 					else if (key == sf::Keyboard::Enter) {
+						PlayClickSFX();
 						ignoreNextTextInput = true;
 						if (selectedField == 1) {
 							// Trim whitespace and set default if empty
@@ -1010,6 +1013,7 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 					}
 					// Cancel
 					else if (key == sf::Keyboard::Escape) {
+						PlayClickSFX();
 						return { "", "" };
 					}
 				}
@@ -1104,16 +1108,19 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 
 						// Navigate down to OK button
 						if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
+							PlayMoveSFX();
 							selectedField = 1;
 							ignoreNextTextInput = true;
 						}
 						// Navigate up to input field
 						else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
+							PlayMoveSFX();
 							selectedField = 0;
 							ignoreNextTextInput = true;
 						}
 						// Confirm
 						else if (key == sf::Keyboard::Enter) {
+							PlayClickSFX();
 							ignoreNextTextInput = true;
 							if (selectedField == 1) {
 								// Trim whitespace and set default if empty
@@ -1132,6 +1139,7 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 						}
 						// Cancel
 						else if (key == sf::Keyboard::Escape) {
+							PlayClickSFX();
 							return { "", "" };
 						}
 					}
