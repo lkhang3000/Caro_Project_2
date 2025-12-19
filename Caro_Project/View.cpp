@@ -2003,6 +2003,11 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 }
 
 int opponentChoosing(sf::RenderWindow& window) {
+	sf::Font font;
+	if (!font.loadFromFile("Assets/font/regular.ttf")) {
+		std::cerr << "Không thể tải font!\n";
+	}
+
 	// 1. Tải Background
 	sf::Texture backgroundT;
 	backgroundT.loadFromFile("Assets/background/background_menu.png");
@@ -2034,6 +2039,35 @@ int opponentChoosing(sf::RenderWindow& window) {
 
 	int choice = 0; // 0: PvP, 1: PvE
 
+
+	// Nút back và setting
+	sf::Texture backButtonT, backButtonDarkT;
+	sf::Texture settingButtonT, settingButtonDarkT;
+
+	backButtonT.loadFromFile("Assets/button/back.png");
+	backButtonDarkT.loadFromFile("Assets/button/back_off.png");
+	settingButtonT.loadFromFile("Assets/button/setting2_button_on.png");
+	settingButtonDarkT.loadFromFile("Assets/button/setting2_button_off.png");
+
+	sf::Sprite backButtonS(backButtonT);
+	sf::Sprite backButtonDark(backButtonDarkT);
+	sf::Sprite settingS(settingButtonT);
+	sf::Sprite settingDark(settingButtonDarkT);
+
+	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonDark.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonS.setPosition(40.f, -40.f);
+	backButtonDark.setPosition(40.f, -40.f);
+
+	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingDark.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingS.setPosition(200.f, 15.f);
+	settingDark.setPosition(200.f, 15.f);
+
+	int row = 1;        // 0 = top buttons, 1 = PvP/PvE
+	int topChoice = 0;  // 0 = Back, 1 = Setting
+
+
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -2042,23 +2076,73 @@ int opponentChoosing(sf::RenderWindow& window) {
 				return -1;
 			}
 			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) {
+				switch (event.key.code) {
+
+					// ===== W / S : LÊN - XUỐNG =====
+				case sf::Keyboard::W:
+				case sf::Keyboard::Up:
 					PlayMoveSFX();
-					choice = 0;
-				}
-				else if (event.key.code == sf::Keyboard::S || event.key.code == sf::Keyboard::Down) {
+					if (row == 1) {
+						// Đang ở PvP / PvE -> lên Back/Setting
+						row = 0;
+					}
+					else {
+						// Đang ở Back/Setting -> đổi PvP/PvE
+						choice = (choice - 1 + 2) % 2;
+					}
+					break;
+
+				case sf::Keyboard::S:
+				case sf::Keyboard::Down:
 					PlayMoveSFX();
-					choice = 1;
-				}
-				else if (event.key.code == sf::Keyboard::Enter) {
+					if (row == 0) {
+						// Đang ở Back/Setting -> xuống PvP/PvE
+						row = 1;
+					}
+					else {
+						// Đang ở PvP / PvE -> đổi PvP/PvE
+						choice = (choice + 1) % 2;
+					}
+					break;
+
+					// ===== A / D : TRÁI - PHẢI =====
+				case sf::Keyboard::A:
+				case sf::Keyboard::Left:
+					PlayMoveSFX();
+					if (row == 0) {
+						topChoice = 0; // Back
+					}
+					break;
+
+				case sf::Keyboard::D:
+				case sf::Keyboard::Right:
+					PlayMoveSFX();
+					if (row == 0) {
+						topChoice = 1; // Setting
+					}
+					break;
+
+					// ===== ENTER =====
+				case sf::Keyboard::Enter:
 					PlayClickSFX();
-					return choice;
-				}
-				else if (event.key.code == sf::Keyboard::Escape) {
-					PlayClickSFX();
+					if (row == 0) {
+						if (topChoice == 0)
+							return -1;                  // Back
+						else
+							handleSettings(window, font); // Setting
+					}
+					else {
+						return choice; // PvP / PvE
+					}
+					break;
+
+					// ===== ESC =====
+				case sf::Keyboard::Escape:
 					return -1;
 				}
 			}
+
+
 		}
 
 		// 5. Hiệu ứng mờ đen (Dimming) giống như code cũ
@@ -2076,6 +2160,17 @@ int opponentChoosing(sf::RenderWindow& window) {
 		window.draw(bg);
 		window.draw(pvpS);
 		window.draw(pveS);
+		// Draw Back
+		if (row == 0 && topChoice == 0)
+			window.draw(backButtonS);
+		else
+			window.draw(backButtonDark);
+		// Draw Setting
+		if (row == 0 && topChoice == 1)
+			window.draw(settingS);
+		else
+			window.draw(settingDark);
+
 		window.display();
 	}
 	return -1;
@@ -2206,7 +2301,6 @@ std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::V
 	}
 	return "";
 }
-
 
 int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue)
 {
@@ -2442,7 +2536,6 @@ int ShowFullMemoryAlert(sf::RenderWindow& window, sf::Font& font)
 }
 
 // Trong View.cpp
-
 int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView)
 {
 	// Vòng lặp để cho phép quay lại nhập tên nếu cần (tùy chọn), hoặc đơn giản là xử lý flow
