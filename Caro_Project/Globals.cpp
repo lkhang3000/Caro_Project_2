@@ -84,18 +84,6 @@ SoundQuality _soundQuality = SOUND_HIGH;
 SoundQuality _bgmQuality = SOUND_HIGH;
 SoundQuality _sfxQuality = SOUND_HIGH;
 
-float GetSoundScale()
-{
-    switch (_soundQuality)
-    {
-    case SOUND_HIGH:   return 1.0f;
-    case SOUND_MEDIUM: return 0.6f;
-    case SOUND_LOW:    return 0.3f;
-    case SOUND_MUTED:  return 0.0f;
-    default:           return 1.0f;
-    }
-}
-
 float GetBgmScale()
 {
     switch (_bgmQuality)

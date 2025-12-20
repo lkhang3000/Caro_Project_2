@@ -61,7 +61,6 @@ extern SoundQuality _bgmQuality;
 extern SoundQuality _sfxQuality;
 
 // helper scale
-float GetSoundScale();
 float GetBgmScale();
 float GetSfxScale();
 

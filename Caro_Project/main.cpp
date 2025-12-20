@@ -123,7 +123,7 @@ main_menu:
                             DuckBGM(10.f, 4000);
                             _resultSfx.stop();
                             _resultSfx.setBuffer(_winBuffer);
-                            _resultSfx.setVolume(100.f * GetSoundScale());
+                            _resultSfx.setVolume(100.f * GetSfxScale());
                             _resultSfx.play();
 
                             _playedResultSfx = true;
@@ -135,7 +135,7 @@ main_menu:
 
                             _resultSfx.stop();
                             _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
-                            _resultSfx.setVolume(100.f * GetSoundScale());
+                            _resultSfx.setVolume(100.f * GetSfxScale());
                             _resultSfx.play();
 
                             _playedResultSfx = true;
@@ -146,7 +146,7 @@ main_menu:
 
                             _resultSfx.stop();
                             _resultSfx.setBuffer(_winBuffer); // dùng win
-                            _resultSfx.setVolume(100.f * GetSoundScale());
+                            _resultSfx.setVolume(100.f * GetSfxScale());
                             _resultSfx.play();
 
                             _playedResultSfx = true;
@@ -213,7 +213,9 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer);
-                                        _resultSfx.setVolume(100.f * GetSoundScale());
+                                        _resultSfx.setVolume(100.f * GetSfxScale());
+                                        if (_sfxQuality == SOUND_MUTED)
+                                            return;
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
@@ -224,7 +226,9 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
-                                        _resultSfx.setVolume(100.f * GetSoundScale());
+                                        _resultSfx.setVolume(100.f * GetSfxScale());
+                                        if (_sfxQuality == SOUND_MUTED)
+                                            return;
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
@@ -235,7 +239,7 @@ main_menu:
 
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer); // dùng win
-                                        _resultSfx.setVolume(100.f * GetSoundScale());
+                                        _resultSfx.setVolume(100.f * GetSfxScale());
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
