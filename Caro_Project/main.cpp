@@ -24,6 +24,7 @@ int main() {
     _winBuffer.loadFromFile("Assets/audio/win_sfx.mp3");
     _loseBuffer.loadFromFile("Assets/audio/lose_sfx.mp3");
     _switchBuffer.loadFromFile("Assets/audio/tab_switch.mp3");
+    _typingBuffer.loadFromFile("Assets/audio/typing_sfx.mp3");
 
     sf::RenderWindow window(sf::VideoMode(1366, 768), "Caro", sf::Style::Close);
     window.setVerticalSyncEnabled(true);
@@ -33,6 +34,7 @@ int main() {
     if (!font.loadFromFile("Assets/font/regular.ttf")) {
         std::cerr << "Không thể tải font!\n";
     }
+    ShowIntro(window, font);
 
 main_menu:
     while (window.isOpen()) {

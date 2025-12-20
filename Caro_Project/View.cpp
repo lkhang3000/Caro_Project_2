@@ -2909,3 +2909,169 @@ int loadGameScreen(sf::RenderWindow& window)
 	}
 	return 0;
 }
+
+void ShowIntro(sf::RenderWindow& window, sf::Font& font)
+{
+	// ================= DATA =================
+	vector<wstring> pages = {
+		L"Ngày xưa tại vùng đất Kibi no Kuni, nơi hoa đào nở rộ dưới bầu trời đỏ thẫm mỗi hoàng hôn,\n"
+		L"con người từng sống trong hòa bình.\n\n"
+		L"Cho đến khi Quỷ Đảo Onigashima trỗi dậy...",
+
+		L"Những con quỷ cổ xưa không mang gươm giáo.\n"
+		L"Chúng dùng Trận Pháp Caro Huyết Ấn – mỗi nước đi là một lời nguyền,\n"
+		L"mỗi bàn cờ là một linh hồn bị phong ấn.\n\n"
+		L"Không ai có thể đánh bại chúng… cho đến ngày quả đào thần trôi theo dòng sông định mệnh...",
+
+		L"Từ quả đào ấy, một cậu bé ra đời.\n"
+		L"Tên cậu là Momotaro.\n\n"
+		L"Mang trong mình huyết mạch trừ quỷ, Momotaro được giao sứ mệnh:\n"
+		L"tiêu diệt Quỷ Đảo bằng trí tuệ và ý chí.\n\n"
+		L"Inu – nanh vuốt của công lý\n"
+		L"Saru – tốc độ và mưu trí\n"
+		L"Kiji – đôi mắt nhìn thấu chiến thuật quỷ dữ...",
+
+		L"Họ cùng nhau bước vào từng bàn cờ sinh tử.\n"
+		L"Mỗi năm quân liên tiếp… là một con quỷ bị tiêu diệt.\n"
+		L"Một sai lầm… là bóng tối nuốt chửng tất cả.\n\n"
+		L"Đây không chỉ là một trò chơi.\n"
+		L"Đây là cuộc chiến diệt quỷ cuối cùng.",
+
+		L"Momotaro…\n\n"
+		L"Số phận của thế giới\n"
+		L"nằm trong nước đi của ngươi..."
+	};
+
+	// ================= ASSETS =================
+	sf::Texture bgTex;
+	bgTex.loadFromFile("Assets/background/intro_background.png");
+	sf::Sprite bg(bgTex);
+	sf::Vector2u texSize = bgTex.getSize();
+	sf::Vector2u winSize = window.getSize();
+
+	bg.setScale(
+		(float)winSize.x / texSize.x,
+		(float)winSize.y / texSize.y
+	);
+
+	sf::Texture skipDarkT, skipOnT;
+	skipDarkT.loadFromFile("Assets/button/skip_button_dark.png");
+	skipOnT.loadFromFile("Assets/button/skip_button.png");
+
+	sf::Sprite skipBtn(skipDarkT);
+	skipBtn.setPosition(50.f, 50.f);
+	skipBtn.setScale(4.0f, 4.0f); 
+
+	sf::Music introMusic;
+	introMusic.openFromFile("Assets/audio/intro_music.mp3");
+	introMusic.setVolume(100.f * GetBgmScale());
+	introMusic.play();
+
+	// ================= TEXT =================
+	sf::Text storyText;
+	storyText.setFont(font);
+	storyText.setCharacterSize(26);
+	storyText.setFillColor(sf::Color(255, 240, 220));
+	storyText.setPosition(20.f, 440.f);
+	storyText.setLineSpacing(1.5f);   
+
+	sf::Text hintText;
+	hintText.setFont(font);
+	hintText.setCharacterSize(22);
+	hintText.setString(L"[ ENTER ] Để tiếp tục");
+	hintText.setPosition(520.f, 700.f);
+	hintText.setFillColor(sf::Color(200, 200, 200));
+
+	// ================= STATE =================
+	int page = 0;
+	size_t charIndex = 0;
+	bool typingFinished = false;
+	bool onSkip = false;
+
+	sf::Clock typingClock;
+	sf::Clock cursorClock;
+	bool showCursor = true;
+
+	// ================= LOOP =================
+	while (window.isOpen())
+	{
+		sf::Event e;
+		while (window.pollEvent(e))
+		{
+			if (e.type == sf::Event::Closed)
+				return;
+
+			if (e.type == sf::Event::KeyPressed)
+			{
+				if (e.key.code == sf::Keyboard::D) {
+					onSkip = true;
+					skipBtn.setTexture(skipOnT);
+				}
+				else if (e.key.code == sf::Keyboard::A) {
+					onSkip = false;
+					skipBtn.setTexture(skipDarkT);
+				}
+
+				if (e.key.code == sf::Keyboard::Enter)
+				{
+					if (onSkip || typingFinished)
+					{
+						page++;
+						if (page >= (int)pages.size())
+						{
+							introMusic.stop();
+							return;
+						}
+						charIndex = 0;
+						typingFinished = false;
+						typingClock.restart();
+					}
+				}
+			}
+		}
+
+		// ============ TYPEWRITER ============
+		if (!typingFinished)
+		{
+			if (typingClock.getElapsedTime().asMilliseconds() >= 40)
+			{
+				charIndex++;
+				PlayTypingSFX();   // ✅ DÙNG HÀM CÓ SẴN
+
+				if (charIndex >= pages[page].size())
+				{
+					charIndex = pages[page].size();
+					typingFinished = true;
+				}
+				typingClock.restart();
+			}
+		}
+
+		// ============ CURSOR ============
+		if (cursorClock.getElapsedTime().asMilliseconds() > 500)
+		{
+			showCursor = !showCursor;
+			cursorClock.restart();
+		}
+
+		wstring visible = pages[page].substr(0, charIndex);
+		if (!typingFinished && showCursor)
+			visible += L"|";
+
+		storyText.setString(visible);
+
+		// ============ DRAW ============
+		window.clear();
+		window.draw(bg);
+		window.draw(storyText);
+		window.draw(skipBtn);
+
+		if (typingFinished)
+			window.draw(hintText);
+
+		window.display();
+	}
+}
+
+
+

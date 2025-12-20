@@ -33,6 +33,8 @@ int loadGameScreen(sf::RenderWindow& window);
 int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue = true);
 int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView);
 std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView, std::string initialText = "");
+void ShowIntro(sf::RenderWindow& window, sf::Font& font);
+
 #endif
 
 

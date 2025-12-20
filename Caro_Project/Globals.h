@@ -32,6 +32,7 @@ extern sf::Sound _resultSfx;  // win / lose
 extern sf::SoundBuffer _buttonBuffer;
 extern sf::SoundBuffer _moveBuffer;
 extern sf::SoundBuffer _switchBuffer;
+extern sf::SoundBuffer _typingBuffer;
 extern sf::SoundBuffer _winBuffer;
 extern sf::SoundBuffer _loseBuffer;
 extern sf::Music _bgm;
@@ -40,6 +41,7 @@ extern bool _playedResultSfx;
 void PlayMoveSFX();
 void PlayClickSFX();
 void PlaySwitchSFX();
+void PlayTypingSFX();
 void DuckBGM(float targetVolume, int durationMs);
 
 extern bool _isBgmDucked;
