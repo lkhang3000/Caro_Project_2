@@ -994,7 +994,7 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 	sf::String nameO = "";
 	sf::Clock cursorClock;
 
-	// ============ Step 1: Enter Player 1's name ============
+	// Step 1: Enter Player 1's name
 	{
 		sf::Text labelX(L"Nhập tên người chơi 1", font, 40);
 		labelX.setFillColor(sf::Color(255, 162, 50));
@@ -1004,9 +1004,19 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 		inputX.setFillColor(sf::Color(80, 48, 32));
 		inputX.setPosition(560.f, 310.f);
 
-		int selectedField = 0; // 0: Input, 1: OK
+		// Thêm text lỗi
+		sf::Text errorText;
+		errorText.setFont(font);
+		errorText.setString(L"Vui lòng nhập tên!");
+		errorText.setCharacterSize(28);
+		errorText.setFillColor(sf::Color(80, 48, 32));
+		errorText.setPosition(580.f, 270.f);
+
+		int selectedField = 0;
 		bool finishedInput = false;
 		bool ignoreNextTextInput = false;
+		bool showError = false;
+		sf::Clock errorClock;
 
 		while (window.isOpen() && !finishedInput) {
 			sf::Event event;
@@ -1016,63 +1026,64 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 					return { "", "" };
 				}
 
-				// Process KeyPressed FIRST to set ignore flag
 				if (event.type == sf::Event::KeyPressed) {
 					auto key = event.key.code;
 
-					// Navigate down to OK button
 					if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
 						PlayMoveSFX();
 						selectedField = 1;
 						ignoreNextTextInput = true;
 					}
-					// Navigate up to input field
 					else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
 						PlayMoveSFX();
 						selectedField = 0;
 						ignoreNextTextInput = true;
 					}
-					// Confirm
+					// Xử lý Enter với kiểm tra
 					else if (key == sf::Keyboard::Enter) {
-						PlayClickSFX();
 						ignoreNextTextInput = true;
-						if (selectedField == 1) {
-							// Trim whitespace and set default if empty
-							std::string trimmed = nameX.toAnsiString();
-							// Xóa khoảng trắng đầu cuối
-							size_t start = trimmed.find_first_not_of(" \t\n\r");
-							size_t end = trimmed.find_last_not_of(" \t\n\r");
 
+						if (selectedField == 1) {
+							// Trim whitespace
+							std::string trimmed = nameX.toAnsiString();
+							size_t start = trimmed.find_first_not_of(" \t\n\r");
+
+							// Nếu rỗng -> hiện lỗi
 							if (start == std::string::npos || trimmed.empty()) {
-								nameX = L"Người chơi 1";
+								PlayClickSFX();
+								showError = true;
+								errorClock.restart();
 							}
-							finishedInput = true;
+							// Có text -> cho vào
+							else {
+								PlayClickSFX();
+								finishedInput = true;
+							}
 						}
 						else {
-							selectedField = 1; // Move to OK
+							PlayClickSFX();
+							selectedField = 1;
 						}
 					}
-					// Cancel
 					else if (key == sf::Keyboard::Escape) {
 						PlayClickSFX();
 						return { "", "" };
 					}
 				}
 
-				// Process TextEntered AFTER KeyPressed
 				if (event.type == sf::Event::TextEntered) {
 					if (ignoreNextTextInput) {
 						ignoreNextTextInput = false;
 						continue;
 					}
 					if (selectedField == 0) {
-						// Backspace
 						if (event.text.unicode == 8 && !nameX.isEmpty()) {
 							nameX.erase(nameX.getSize() - 1);
+							showError = false;
 						}
-						// Valid characters - cho phép tất cả ký tự Unicode
 						else if (event.text.unicode > 31 && event.text.unicode != 127 && nameX.getSize() < 18) {
 							nameX += event.text.unicode;
+							showError = false;
 						}
 					}
 				}
@@ -1084,20 +1095,17 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 				cursorClock.restart();
 			}
 
-			// Update display text
 			sf::String displayText = nameX;
 			if (showCursor) displayText += "|";
 			inputX.setString(displayText);
 
-			// Update textures: when input is selected, form is bright (On)
-			// when OK is selected, OK button is bright (On)
 			if (selectedField == 0) {
-				nameSprite.setTexture(nameOnT);   // Input selected -> form bright
-				okButton.setTexture(okOffT);       // OK not selected -> OK dim
+				nameSprite.setTexture(nameOnT);
+				okButton.setTexture(okOffT);
 			}
 			else {
-				nameSprite.setTexture(nameOffT);   // Input not selected -> form dim
-				okButton.setTexture(okOnT);        // OK selected -> OK bright
+				nameSprite.setTexture(nameOffT);
+				okButton.setTexture(okOnT);
 			}
 
 			// Render
@@ -1107,19 +1115,22 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 			window.draw(labelX);
 			window.draw(inputX);
 			window.draw(okButton);
+
+			// Vẽ text lỗi nếu cần (hiện trong 2 giây)
+			if (showError && errorClock.getElapsedTime().asSeconds() < 2.0f) {
+				window.draw(errorText);
+			}
+
 			window.display();
 		}
 	}
 
-	// ============ Set Player 2's name based on mode ============
-
-
+	// Set Player 2's name based on mode
 	if (_isPvE) {
 		nameO = L"Máy";
-
 	}
 	else {
-		// ============ Step 2: Enter Player 2's name (only if not PvE) ============
+		// Step 2: Enter Player 2's name (only if not PvE)
 		{
 			sf::Text labelO(L"Nhập tên người chơi 2", font, 40);
 			labelO.setFillColor(sf::Color(255, 162, 50));
@@ -1129,9 +1140,19 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 			inputO.setFillColor(sf::Color(80, 48, 32));
 			inputO.setPosition(560.f, 310.f);
 
-			int selectedField = 0; // 0: Input, 1: OK
+			// Thêm text lỗi cho Player 2
+			sf::Text errorText;
+			errorText.setFont(font);
+			errorText.setString(L"Vui lòng nhập tên!");
+			errorText.setCharacterSize(28);
+			errorText.setFillColor(sf::Color(80, 48, 32));
+			errorText.setPosition(580.f, 270.f);
+
+			int selectedField = 0;
 			bool finishedInput = false;
 			bool ignoreNextTextInput = false;
+			bool showError = false;
+			sf::Clock errorClock;
 
 			cursorClock.restart(); // Reset cursor clock for Player 2
 
@@ -1143,62 +1164,64 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 						return { "", "" };
 					}
 
-					// Process KeyPressed FIRST to set ignore flag
 					if (event.type == sf::Event::KeyPressed) {
 						auto key = event.key.code;
 
-						// Navigate down to OK button
 						if ((key == sf::Keyboard::S || key == sf::Keyboard::Down) && selectedField == 0) {
 							PlayMoveSFX();
 							selectedField = 1;
 							ignoreNextTextInput = true;
 						}
-						// Navigate up to input field
 						else if ((key == sf::Keyboard::W || key == sf::Keyboard::Up) && selectedField == 1) {
 							PlayMoveSFX();
 							selectedField = 0;
 							ignoreNextTextInput = true;
 						}
-						// Confirm
+						// Xử lý Enter với kiểm tra cho Player 2
 						else if (key == sf::Keyboard::Enter) {
-							PlayClickSFX();
 							ignoreNextTextInput = true;
+
 							if (selectedField == 1) {
-								// Trim whitespace and set default if empty
+								// Trim whitespace
 								std::string trimmed = nameO.toAnsiString();
 								size_t start = trimmed.find_first_not_of(" \t\n\r");
-								size_t end = trimmed.find_last_not_of(" \t\n\r");
 
+								// Nếu rỗng -> hiện lỗi
 								if (start == std::string::npos || trimmed.empty()) {
-									nameO = L"Người chơi 2";
+									PlayClickSFX();
+									showError = true;
+									errorClock.restart();
 								}
-								finishedInput = true;
+								// Có text -> cho vào
+								else {
+									PlayClickSFX();
+									finishedInput = true;
+								}
 							}
 							else {
-								selectedField = 1; // Move to OK
+								PlayClickSFX();
+								selectedField = 1;
 							}
 						}
-						// Cancel
 						else if (key == sf::Keyboard::Escape) {
 							PlayClickSFX();
 							return { "", "" };
 						}
 					}
 
-					// Process TextEntered AFTER KeyPressed
 					if (event.type == sf::Event::TextEntered) {
 						if (ignoreNextTextInput) {
 							ignoreNextTextInput = false;
 							continue;
 						}
 						if (selectedField == 0) {
-							// Backspace
 							if (event.text.unicode == 8 && !nameO.isEmpty()) {
 								nameO.erase(nameO.getSize() - 1);
+								showError = false;
 							}
-							// Valid characters - cho phép tất cả ký tự Unicode
 							else if (event.text.unicode > 31 && event.text.unicode != 127 && nameO.getSize() < 18) {
 								nameO += event.text.unicode;
+								showError = false;
 							}
 						}
 					}
@@ -1215,15 +1238,13 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 				if (showCursor) displayText += "|";
 				inputO.setString(displayText);
 
-				// Update textures: when input is selected, form is bright (On)
-				// when OK is selected, OK button is bright (On)
 				if (selectedField == 0) {
-					nameSprite.setTexture(nameOnT);   // Input selected -> form bright
-					okButton.setTexture(okOffT);       // OK not selected -> OK dim
+					nameSprite.setTexture(nameOnT);
+					okButton.setTexture(okOffT);
 				}
 				else {
-					nameSprite.setTexture(nameOffT);   // Input not selected -> form dim
-					okButton.setTexture(okOnT);        // OK selected -> OK bright
+					nameSprite.setTexture(nameOffT);
+					okButton.setTexture(okOnT);
 				}
 
 				// Render
@@ -1233,17 +1254,26 @@ std::pair<std::string, std::string> enterPlayerNames(sf::RenderWindow& window, s
 				window.draw(labelO);
 				window.draw(inputO);
 				window.draw(okButton);
+
+				// Vẽ text lỗi nếu cần
+				if (showError && errorClock.getElapsedTime().asSeconds() < 2.0f) {
+					window.draw(errorText);
+				}
+
 				window.display();
 			}
 		}
 	}
 
-	// Convert sf::String to std::string
-	std::string nameXStr = nameX.toAnsiString();
-	std::string nameOStr = nameO.toAnsiString();
+	// Convert sf::String to std::string with UTF-8 encoding
+	auto utf8X = nameX.toUtf8();
+	auto utf8O = nameO.toUtf8();
+
+	std::string nameXStr(utf8X.begin(), utf8X.end());
+	std::string nameOStr(utf8O.begin(), utf8O.end());
+
 	return { nameXStr, nameOStr };
 }
-
 void GotoXY(int x, int y) {
 	COORD coord;
 	coord.X = x;
@@ -2003,6 +2033,11 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 }
 
 int opponentChoosing(sf::RenderWindow& window) {
+	sf::Font font;
+	if (!font.loadFromFile("Assets/font/regular.ttf")) {
+		std::cerr << "Không thể tải font!\n";
+	}
+
 	// 1. Tải Background
 	sf::Texture backgroundT;
 	backgroundT.loadFromFile("Assets/background/background_menu.png");
@@ -2034,6 +2069,35 @@ int opponentChoosing(sf::RenderWindow& window) {
 
 	int choice = 0; // 0: PvP, 1: PvE
 
+
+	// Nút back và setting
+	sf::Texture backButtonT, backButtonDarkT;
+	sf::Texture settingButtonT, settingButtonDarkT;
+
+	backButtonT.loadFromFile("Assets/button/back.png");
+	backButtonDarkT.loadFromFile("Assets/button/back_off.png");
+	settingButtonT.loadFromFile("Assets/button/setting2_button_on.png");
+	settingButtonDarkT.loadFromFile("Assets/button/setting2_button_off.png");
+
+	sf::Sprite backButtonS(backButtonT);
+	sf::Sprite backButtonDark(backButtonDarkT);
+	sf::Sprite settingS(settingButtonT);
+	sf::Sprite settingDark(settingButtonDarkT);
+
+	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonDark.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backButtonS.setPosition(40.f, -40.f);
+	backButtonDark.setPosition(40.f, -40.f);
+
+	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingDark.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingS.setPosition(200.f, 15.f);
+	settingDark.setPosition(200.f, 15.f);
+
+	int row = 1;        // 0 = top buttons, 1 = PvP/PvE
+	int topChoice = 0;  // 0 = Back, 1 = Setting
+
+
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -2042,23 +2106,73 @@ int opponentChoosing(sf::RenderWindow& window) {
 				return -1;
 			}
 			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) {
+				switch (event.key.code) {
+
+					// ===== W / S : LÊN - XUỐNG =====
+				case sf::Keyboard::W:
+				case sf::Keyboard::Up:
 					PlayMoveSFX();
-					choice = 0;
-				}
-				else if (event.key.code == sf::Keyboard::S || event.key.code == sf::Keyboard::Down) {
+					if (row == 1) {
+						// Đang ở PvP / PvE -> lên Back/Setting
+						row = 0;
+					}
+					else {
+						// Đang ở Back/Setting -> đổi PvP/PvE
+						choice = (choice - 1 + 2) % 2;
+					}
+					break;
+
+				case sf::Keyboard::S:
+				case sf::Keyboard::Down:
 					PlayMoveSFX();
-					choice = 1;
-				}
-				else if (event.key.code == sf::Keyboard::Enter) {
+					if (row == 0) {
+						// Đang ở Back/Setting -> xuống PvP/PvE
+						row = 1;
+					}
+					else {
+						// Đang ở PvP / PvE -> đổi PvP/PvE
+						choice = (choice + 1) % 2;
+					}
+					break;
+
+					// ===== A / D : TRÁI - PHẢI =====
+				case sf::Keyboard::A:
+				case sf::Keyboard::Left:
+					PlayMoveSFX();
+					if (row == 0) {
+						topChoice = 0; // Back
+					}
+					break;
+
+				case sf::Keyboard::D:
+				case sf::Keyboard::Right:
+					PlayMoveSFX();
+					if (row == 0) {
+						topChoice = 1; // Setting
+					}
+					break;
+
+					// ===== ENTER =====
+				case sf::Keyboard::Enter:
 					PlayClickSFX();
-					return choice;
-				}
-				else if (event.key.code == sf::Keyboard::Escape) {
-					PlayClickSFX();
+					if (row == 0) {
+						if (topChoice == 0)
+							return -1;                  // Back
+						else
+							handleSettings(window, font); // Setting
+					}
+					else {
+						return choice; // PvP / PvE
+					}
+					break;
+
+					// ===== ESC =====
+				case sf::Keyboard::Escape:
 					return -1;
 				}
 			}
+
+
 		}
 
 		// 5. Hiệu ứng mờ đen (Dimming) giống như code cũ
@@ -2076,6 +2190,17 @@ int opponentChoosing(sf::RenderWindow& window) {
 		window.draw(bg);
 		window.draw(pvpS);
 		window.draw(pveS);
+		// Draw Back
+		if (row == 0 && topChoice == 0)
+			window.draw(backButtonS);
+		else
+			window.draw(backButtonDark);
+		// Draw Setting
+		if (row == 0 && topChoice == 1)
+			window.draw(settingS);
+		else
+			window.draw(settingDark);
+
 		window.display();
 	}
 	return -1;
@@ -2206,7 +2331,6 @@ std::string GetInputString(sf::RenderWindow& window, sf::Font& font, const sf::V
 	}
 	return "";
 }
-
 
 int handleSaveSuccessScreen(sf::RenderWindow& window, sf::Font& font, bool askContinue)
 {
@@ -2442,7 +2566,6 @@ int ShowFullMemoryAlert(sf::RenderWindow& window, sf::Font& font)
 }
 
 // Trong View.cpp
-
 int handleSaveScreen(sf::RenderWindow& window, sf::Font& font, const sf::View& gameView)
 {
 	// Vòng lặp để cho phép quay lại nhập tên nếu cần (tùy chọn), hoặc đơn giản là xử lý flow
