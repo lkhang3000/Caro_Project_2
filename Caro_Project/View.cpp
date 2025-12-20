@@ -2924,7 +2924,7 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 		L"Không ai có thể đánh bại chúng… cho đến ngày quả đào thần trôi theo dòng sông định mệnh...",
 
 		L"Từ quả đào ấy, một cậu bé ra đời.\n"
-		L"Tên cậu là Momotaro.\n\n"
+		L"Tên cậu là Momotaro.\n"
 		L"Mang trong mình huyết mạch trừ quỷ, Momotaro được giao sứ mệnh:\n"
 		L"tiêu diệt Quỷ Đảo bằng trí tuệ và ý chí.\n\n"
 		L"Inu – nanh vuốt của công lý\n"
@@ -2942,55 +2942,52 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 		L"nằm trong nước đi của ngươi..."
 	};
 
-	// ================= ASSETS =================
+	// ================= BACKGROUND =================
 	sf::Texture bgTex;
 	bgTex.loadFromFile("Assets/background/intro_background.png");
 	sf::Sprite bg(bgTex);
-	sf::Vector2u texSize = bgTex.getSize();
-	sf::Vector2u winSize = window.getSize();
 
-	bg.setScale(
-		(float)winSize.x / texSize.x,
-		(float)winSize.y / texSize.y
-	);
+	sf::Vector2u ws = window.getSize();
+	sf::Vector2u ts = bgTex.getSize();
+	bg.setScale((float)ws.x / ts.x, (float)ws.y / ts.y);
 
+	// ================= SKIP BUTTON =================
 	sf::Texture skipDarkT, skipOnT;
 	skipDarkT.loadFromFile("Assets/button/skip_button_dark.png");
 	skipOnT.loadFromFile("Assets/button/skip_button.png");
 
 	sf::Sprite skipBtn(skipDarkT);
 	skipBtn.setPosition(50.f, 50.f);
-	skipBtn.setScale(4.0f, 4.0f); 
+	skipBtn.setScale(4.f, 4.f);
 
-	sf::Music introMusic;
-	introMusic.openFromFile("Assets/audio/intro_music.mp3");
-	introMusic.setVolume(100.f * GetBgmScale());
-	introMusic.play();
+	bool onSkip = false;
 
 	// ================= TEXT =================
 	sf::Text storyText;
 	storyText.setFont(font);
-	storyText.setCharacterSize(26);
+	storyText.setCharacterSize(28);
 	storyText.setFillColor(sf::Color(255, 240, 220));
-	storyText.setPosition(20.f, 440.f);
-	storyText.setLineSpacing(1.5f);   
+	storyText.setPosition(80.f, 420.f);
+	storyText.setLineSpacing(1.5f);
 
 	sf::Text hintText;
 	hintText.setFont(font);
 	hintText.setCharacterSize(22);
 	hintText.setString(L"[ ENTER ] Để tiếp tục");
-	hintText.setPosition(520.f, 700.f);
 	hintText.setFillColor(sf::Color(200, 200, 200));
+	hintText.setPosition(850.f, 720.f);
 
 	// ================= STATE =================
 	int page = 0;
 	size_t charIndex = 0;
 	bool typingFinished = false;
-	bool onSkip = false;
+	bool typingPlaying = false;
 
 	sf::Clock typingClock;
 	sf::Clock cursorClock;
 	bool showCursor = true;
+
+	bool enterLocked = false; // chặn spam Enter
 
 	// ================= LOOP =================
 	while (window.isOpen())
@@ -3001,54 +2998,71 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 			if (e.type == sf::Event::Closed)
 				return;
 
-			if (e.type == sf::Event::KeyPressed)
+			if (e.type == sf::Event::KeyPressed && !enterLocked)
 			{
-				if (e.key.code == sf::Keyboard::D) {
+				if (e.key.code == sf::Keyboard::D)
+				{
 					onSkip = true;
 					skipBtn.setTexture(skipOnT);
 				}
-				else if (e.key.code == sf::Keyboard::A) {
+				else if (e.key.code == sf::Keyboard::A)
+				{
 					onSkip = false;
 					skipBtn.setTexture(skipDarkT);
 				}
-
-				if (e.key.code == sf::Keyboard::Enter)
+				else if (e.key.code == sf::Keyboard::Enter)
 				{
 					if (onSkip || typingFinished)
 					{
+						enterLocked = true;
+
 						page++;
 						if (page >= (int)pages.size())
-						{
-							introMusic.stop();
 							return;
-						}
+
 						charIndex = 0;
 						typingFinished = false;
+						typingPlaying = false;
 						typingClock.restart();
 					}
 				}
 			}
+
+			if (e.type == sf::Event::KeyReleased)
+			{
+				if (e.key.code == sf::Keyboard::Enter)
+					enterLocked = false;
+			}
 		}
 
-		// ============ TYPEWRITER ============
+		// ================= TYPEWRITER =================
 		if (!typingFinished)
 		{
-			if (typingClock.getElapsedTime().asMilliseconds() >= 40)
+			if (typingClock.getElapsedTime().asMilliseconds() >= 30)
 			{
+				if (!typingPlaying)
+				{
+					PlayTypingSFX();
+					_uiSfx.setLoop(true);
+					typingPlaying = true;
+				}
+
 				charIndex++;
-				PlayTypingSFX();   // ✅ DÙNG HÀM CÓ SẴN
 
 				if (charIndex >= pages[page].size())
 				{
 					charIndex = pages[page].size();
 					typingFinished = true;
+					typingPlaying = false;
+					_uiSfx.stop();
 				}
+
 				typingClock.restart();
 			}
 		}
 
-		// ============ CURSOR ============
-		if (cursorClock.getElapsedTime().asMilliseconds() > 500)
+		// ================= CURSOR =================
+		if (cursorClock.getElapsedTime().asMilliseconds() >= 500)
 		{
 			showCursor = !showCursor;
 			cursorClock.restart();
@@ -3060,18 +3074,18 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 
 		storyText.setString(visible);
 
-		// ============ DRAW ============
+		// ================= DRAW =================
 		window.clear();
 		window.draw(bg);
 		window.draw(storyText);
 		window.draw(skipBtn);
-
-		if (typingFinished)
-			window.draw(hintText);
-
+		if (typingFinished) window.draw(hintText);
 		window.display();
 	}
 }
+
+
+
 
 
 

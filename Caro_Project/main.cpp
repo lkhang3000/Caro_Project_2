@@ -14,11 +14,6 @@ GameRule _rule = GameRule::FREESTYLE;
 int main() {
     FixConsoleWindow();
 
-    _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
-    _bgm.setLoop(true);
-    _bgm.setVolume(40.f * GetBgmScale());
-    _bgm.play();
-
     _buttonBuffer.loadFromFile("Assets/audio/button_click.mp3");
     _moveBuffer.loadFromFile("Assets/audio/move_click.mp3");
     _winBuffer.loadFromFile("Assets/audio/win_sfx.mp3");
@@ -34,7 +29,30 @@ int main() {
     if (!font.loadFromFile("Assets/font/regular.ttf")) {
         std::cerr << "Không thể tải font!\n";
     }
+
+
+    _bgm.openFromFile("Assets/audio/intro_theme.mp3");
+    _bgm.setLoop(true);
+    _bgm.setVolume(40.f * GetBgmScale());
+    _bgm.play();
+
+
     ShowIntro(window, font);
+
+    // ===== RESET AUDIO SAU INTRO =====
+    _uiSfx.stop();
+    _uiSfx.setLoop(false);
+    _bgm.stop();
+
+    // ===== PHÁT LẠI NHẠC MENU =====
+    sf::Clock menuMusicClock;
+    bool menuMusicPlayed = false;
+    _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
+    _bgm.setLoop(true);
+    _bgm.setVolume(40.f * GetBgmScale());
+    menuMusicClock.restart();
+    _bgm.play();
+        menuMusicPlayed = true;
 
 main_menu:
     while (window.isOpen()) {
