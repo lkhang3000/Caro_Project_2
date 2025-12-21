@@ -2912,6 +2912,71 @@ int loadGameScreen(sf::RenderWindow& window)
 
 void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 {
+	// ================= LOADING INTRO (5s) =================
+	sf::Clock introMusicClock;
+	bool introMusicPlayed = false;
+
+	sf::Texture loadingBgT, loadingBtnT;
+	loadingBgT.loadFromFile("Assets/background/loading_background.png");
+	loadingBtnT.loadFromFile("Assets/button/loading.png");
+
+	sf::Sprite loadingBg(loadingBgT);
+	sf::Sprite loadingBtn(loadingBtnT);
+
+	sf::Vector2u ws0 = window.getSize();
+	sf::Vector2u ts0 = loadingBgT.getSize();
+	loadingBg.setScale(
+		(float)ws0.x / ts0.x,
+		(float)ws0.y / ts0.y
+	);
+
+	loadingBtn.setScale(4.12f, 4.12f);
+
+	sf::Clock loadingClock;
+	sf::Clock blinkClock;
+	bool showLoadingBtn = true;
+
+	while (window.isOpen())
+	{
+		sf::Event e;
+		while (window.pollEvent(e))
+		{
+			if (e.type == sf::Event::Closed)
+				return;
+		}
+
+		float t = loadingClock.getElapsedTime().asSeconds();
+
+		// 4 giây đầu: nhấp nháy
+		if (t < 4.f)
+		{
+			if (blinkClock.getElapsedTime().asMilliseconds() >= 400)
+			{
+				showLoadingBtn = !showLoadingBtn;
+				blinkClock.restart();
+			}
+		}
+		// 2 giây cuối: luôn hiện
+		else
+		{
+			showLoadingBtn = true;
+		}
+
+		window.clear();
+		window.draw(loadingBg);
+		if (showLoadingBtn)
+			window.draw(loadingBtn);
+		window.display();
+
+		if (t >= 6.f) {
+			_bgm.openFromFile("Assets/audio/intro_theme.mp3"); 
+			_bgm.setLoop(true); _bgm.setVolume(40.f * GetBgmScale()); 
+			_bgm.play();
+			break;
+		}
+
+	}
+
 	// ================= DATA =================
 	vector<wstring> pages = {
 		L"Ngày xưa tại vùng đất Kibi no Kuni, nơi hoa đào nở rộ dưới bầu trời đỏ thẫm mỗi hoàng hôn,\n"

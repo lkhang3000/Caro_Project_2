@@ -30,29 +30,20 @@ int main() {
         std::cerr << "Không thể tải font!\n";
     }
 
-
-    _bgm.openFromFile("Assets/audio/intro_theme.mp3");
-    _bgm.setLoop(true);
-    _bgm.setVolume(40.f * GetBgmScale());
-    _bgm.play();
-
-
+    // ===== INTRO =====
     ShowIntro(window, font);
 
     // ===== RESET AUDIO SAU INTRO =====
-    _uiSfx.stop();
-    _uiSfx.setLoop(false);
     _bgm.stop();
 
-    // ===== PHÁT LẠI NHẠC MENU =====
-    sf::Clock menuMusicClock;
-    bool menuMusicPlayed = false;
+    _uiSfx.stop();
+    _uiSfx.setLoop(false);
+
+    // ===== PLAY MENU MUSIC =====
     _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
     _bgm.setLoop(true);
     _bgm.setVolume(40.f * GetBgmScale());
-    menuMusicClock.restart();
     _bgm.play();
-        menuMusicPlayed = true;
 
 main_menu:
     while (window.isOpen()) {
