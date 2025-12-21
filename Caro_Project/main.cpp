@@ -214,9 +214,8 @@ main_menu:
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer);
                                         _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality == SOUND_MUTED)
-                                            return;
-                                        _resultSfx.play();
+                                        if (_sfxQuality != SOUND_MUTED)
+                                            _resultSfx.play();
 
                                         _playedResultSfx = true;
                                     }
@@ -369,6 +368,9 @@ main_menu:
             if (opponent == 1) _isPvE = true;
             else _isPvE = false;
 
+            _resultSfx.stop();
+            _playedResultSfx = false;
+
             auto [nameX, nameO] = enterPlayerNames(window, font);
             _playerXName = nameX;
             _playerOName = nameO;
@@ -389,6 +391,8 @@ main_menu:
             else if (rule == GameRule::STANDARD) _backgroundBoard = 2;
             else if (rule == GameRule::BLOCKED_TWO_ENDS) _backgroundBoard = 3;
 
+            _resultSfx.stop();
+            _playedResultSfx = false;
             
             RunGameLoop(true);
 

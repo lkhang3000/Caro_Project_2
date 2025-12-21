@@ -13,6 +13,7 @@ void StartGame() {
     _winsX = 0;   
     _winsO = 0; 
     _matchCount = 1;
+    _playedResultSfx = false;
 }
 
 void ExitGame() {

@@ -29,6 +29,7 @@ extern sf::String _playerOName;
 
 extern sf::Sound _uiSfx;      // move, click
 extern sf::Sound _resultSfx;  // win / lose
+extern sf::Sound _typingSfx;
 extern sf::SoundBuffer _buttonBuffer;
 extern sf::SoundBuffer _moveBuffer;
 extern sf::SoundBuffer _switchBuffer;

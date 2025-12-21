@@ -32,6 +32,7 @@ sf::SoundBuffer _switchBuffer;
 sf::SoundBuffer _typingBuffer;
 sf::Sound _uiSfx;
 sf::Sound _resultSfx;
+sf::Sound _typingSfx;
 bool _playedResultSfx = false;
 
 void PlayMoveSFX() {
@@ -50,12 +51,13 @@ void PlayClickSFX() {
     _uiSfx.play();
 }
 
-void PlayTypingSFX() {
+void PlayTypingSFX()
+{
     if (_typingBuffer.getSampleCount() == 0) return;
-    _uiSfx.stop();
-    _uiSfx.setBuffer(_typingBuffer);
-    _uiSfx.setVolume(100.f * GetSfxScale());
-    _uiSfx.play();
+    _typingSfx.stop();
+    _typingSfx.setBuffer(_typingBuffer);
+    _typingSfx.setVolume(100.f * GetSfxScale());
+    _typingSfx.play();
 }
 
 void PlaySwitchSFX() {

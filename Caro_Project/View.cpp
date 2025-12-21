@@ -2923,10 +2923,10 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 		L"mỗi bàn cờ là một linh hồn bị phong ấn.\n\n"
 		L"Không ai có thể đánh bại chúng… cho đến ngày quả đào thần trôi theo dòng sông định mệnh...",
 
-		L"Từ quả đào ấy, một cậu bé ra đời.\n"
-		L"Tên cậu là Momotaro.\n"
+		L"Từ quả đào ấy, một cậu bé ra đời. Tên cậu là Momotaro.\n"
 		L"Mang trong mình huyết mạch trừ quỷ, Momotaro được giao sứ mệnh:\n"
 		L"tiêu diệt Quỷ Đảo bằng trí tuệ và ý chí.\n\n"
+		L"Đồng hành cùng cậu là những người bạn:\n"
 		L"Inu – nanh vuốt của công lý\n"
 		L"Saru – tốc độ và mưu trí\n"
 		L"Kiji – đôi mắt nhìn thấu chiến thuật quỷ dữ...",
@@ -2987,7 +2987,7 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 	sf::Clock cursorClock;
 	bool showCursor = true;
 
-	bool enterLocked = false; // chặn spam Enter
+	bool enterLocked = false;
 
 	// ================= LOOP =================
 	while (window.isOpen())
@@ -3002,23 +3002,30 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 			{
 				if (e.key.code == sf::Keyboard::D)
 				{
+					PlayMoveSFX();               // MOVE SFX
 					onSkip = true;
 					skipBtn.setTexture(skipOnT);
 				}
 				else if (e.key.code == sf::Keyboard::A)
 				{
+					PlayMoveSFX();               // MOVE SFX
 					onSkip = false;
 					skipBtn.setTexture(skipDarkT);
 				}
 				else if (e.key.code == sf::Keyboard::Enter)
 				{
+					PlayClickSFX();              // CLICK SFX
+
 					if (onSkip || typingFinished)
 					{
 						enterLocked = true;
 
 						page++;
 						if (page >= (int)pages.size())
+						{
+							_typingSfx.stop();   // đảm bảo tắt typing khi thoát intro
 							return;
+						}
 
 						charIndex = 0;
 						typingFinished = false;
@@ -3043,7 +3050,7 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 				if (!typingPlaying)
 				{
 					PlayTypingSFX();
-					_uiSfx.setLoop(true);
+					_typingSfx.setLoop(true);     // TYPING LOOP
 					typingPlaying = true;
 				}
 
@@ -3054,7 +3061,7 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 					charIndex = pages[page].size();
 					typingFinished = true;
 					typingPlaying = false;
-					_uiSfx.stop();
+					_typingSfx.stop();            // ✅ STOP RIÊNG TYPING
 				}
 
 				typingClock.restart();
@@ -3083,9 +3090,3 @@ void ShowIntro(sf::RenderWindow& window, sf::Font& font)
 		window.display();
 	}
 }
-
-
-
-
-
-
