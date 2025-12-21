@@ -43,13 +43,15 @@ int main() {
     _bgm.openFromFile("Assets/audio/bgm_loop.mp3");
     _bgm.setLoop(true);
     _bgm.setVolume(40.f * GetBgmScale());
+    _bgmNormalVolume = 40.f;
+
     _bgm.play();
 
 main_menu:
     while (window.isOpen()) {
         int menuChoice = mainScreen(window);
 
-        
+
         auto RunGameLoop = [&](bool isLoaded) {
             // Remove font loading from here, since it's now loaded above
 
@@ -63,14 +65,14 @@ main_menu:
             sf::Sprite settingButton(settingOffT);
             sf::Sprite pauseButton(pauseOffT);
 
-            
+
             float buttonScale = 4.26875f - 1.5;
             float margin = 4.267f - 1.5;
             float btnWidth = settingOffT.getSize().x * buttonScale;
 
-            
+
             float settingX = 1366.f - margin - btnWidth;
-            float pauseX = settingX; 
+            float pauseX = settingX;
             float settingY = margin;
             float pauseY = margin;
 
@@ -82,7 +84,7 @@ main_menu:
 
             settingButton.setPosition(settingX, settingY);
             pauseButton.setPosition(pauseX, pauseY);
-            
+
             if (!isLoaded) {
                 StartGame();
             }
@@ -90,13 +92,13 @@ main_menu:
 
             bool playedResultSfx = false;
 
-            if (isLoaded && result != 2) result = 2; 
+            if (isLoaded && result != 2) result = 2;
 
             enum GameState { BOARD_ACTIVE, PAUSE_FOCUSED, SETTING_FOCUSED };
             GameState gameState = BOARD_ACTIVE;
             bool isPaused = false;
 
-            
+
             while (window.isOpen()) {
                 if (_isPvE && !_TURN && result == 2 && !isPaused) {
                     sf::sleep(sf::milliseconds(300));
@@ -144,7 +146,7 @@ main_menu:
                         }
                         _TURN = !_TURN;
                     }
-                }            
+                }
 
                 sf::Event event;
                 while (window.pollEvent(event)) {
@@ -194,56 +196,61 @@ main_menu:
                         case sf::Keyboard::Enter:
                         {
                             PlayClickSFX();
-                            if (gameState == BOARD_ACTIVE) {
-                                if (PlacePiece()) {
+                            if (gameState == BOARD_ACTIVE)
+                            {
+                                if (PlacePiece())
+                                {
                                     result = TestBoard(rule);
 
-                                    if (result == -1 && !_playedResultSfx) {
-                                        ++_winsX;
-                                        DuckBGM(10.f, 4000);
-
-                                        _resultSfx.stop();
-                                        _resultSfx.setBuffer(_winBuffer);
-                                        _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality != 0.f)
-                                            _resultSfx.play();
-
-                                        _playedResultSfx = true;
-                                    }
-                                    else if (result == 1 && !_playedResultSfx) {
-                                        ++_winsO;
-                                        DuckBGM(10.f, 4000);
-
-                                        _resultSfx.stop();
-                                        _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
-                                        _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality == 0.f)
-                                            return;
-                                        _resultSfx.play();
-
-                                        _playedResultSfx = true;
-                                    }
-                                    else if (result == 0 && !_playedResultSfx)
+                                    if (!_playedResultSfx)
                                     {
-                                        DuckBGM(10.f, 4000);
+                                        if (result == -1) // X WIN
+                                        {
+                                            ++_winsX;
 
-                                        _resultSfx.stop();
-                                        _resultSfx.setBuffer(_winBuffer); // dùng win
-                                        _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality == 0.f)
-                                            return;
-                                        _resultSfx.play();
+                                            DuckBGM(10.f, 4000);
 
-                                        _playedResultSfx = true;
+                                            _resultSfx.stop();
+                                            _resultSfx.setBuffer(_winBuffer);
+                                            if (_sfxQuality != SOUND_MUTED)
+                                                _resultSfx.play();
+
+                                            _playedResultSfx = true;
+                                        }
+                                        else if (result == 1) // O WIN
+                                        {
+                                            ++_winsO;
+
+                                            DuckBGM(10.f, 4000);
+
+                                            _resultSfx.stop();
+                                            _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
+                                            if (_sfxQuality != SOUND_MUTED)
+                                                _resultSfx.play();
+
+                                            _playedResultSfx = true;
+                                        }
+                                        else if (result == 0) // DRAW
+                                        {
+                                            DuckBGM(10.f, 4000);
+
+                                            _resultSfx.stop();
+                                            _resultSfx.setBuffer(_winBuffer); // dùng chung
+                                            if (_sfxQuality != SOUND_MUTED)
+                                                _resultSfx.play();
+
+                                            _playedResultSfx = true;
+                                        }
                                     }
+
                                     _TURN = !_TURN;
                                 }
                             }
-                         
+
                             else if (gameState == SETTING_FOCUSED) {
                                 handleSettings(window, font);
                                 gameState = BOARD_ACTIVE;
-                                _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
+                                _bgm.setVolume(_bgmNormalVolume * GetBgmScale());
                             }
                             else if (gameState == PAUSE_FOCUSED) {
                                 isPaused = true;
@@ -272,13 +279,11 @@ main_menu:
                     }
                 }
 
-                if (_isBgmDucked)
+                if (_isBgmDucked &&
+                    _bgmDuckClock.getElapsedTime().asMilliseconds() >= _bgmDuckDurationMs)
                 {
-                    if (_bgmDuckClock.getElapsedTime().asMilliseconds() >= _bgmDuckDurationMs)
-                    {
-                        _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
-                        _isBgmDucked = false;
-                    }
+                    _bgm.setVolume(_bgmNormalVolume * GetBgmScale());
+                    _isBgmDucked = false;
                 }
 
                 // === 4. Render Game ===
@@ -294,7 +299,7 @@ main_menu:
                         return;
                     }
 
-                    _matchCount++; 
+                    _matchCount++;
 
                     ResetData();
                     _currentRow = 0;
@@ -304,7 +309,7 @@ main_menu:
                     result = 2;
                     _playedResultSfx = false;
                     _isBgmDucked = false;
-                    _bgm.setVolume(_bgmNormalVolume* GetBgmScale());
+                    _bgm.setVolume(_bgmNormalVolume * GetBgmScale());
                     sf::sleep(sf::milliseconds(200));
                     sf::Event e;
                     while (window.pollEvent(e)) {
@@ -313,7 +318,7 @@ main_menu:
                 else if (drawChoice == 1) { // Exit: return to menu
                     return;
                 }
-                
+
                 settingButton.setTexture(settingOffT);
                 pauseButton.setTexture(pauseOffT);
 
@@ -325,7 +330,7 @@ main_menu:
                     pauseButton.setTexture(pauseOnT);
                     settingButton.setTexture(settingOffT);
                 }
-               
+
                 window.draw(settingButton);
                 window.draw(pauseButton);
                 window.display();
@@ -376,7 +381,7 @@ main_menu:
         {
             int loadResult = loadGameScreen(window);
 
-            if (loadResult == 0) break; 
+            if (loadResult == 0) break;
 
             rule = _rule;
 
@@ -386,7 +391,7 @@ main_menu:
 
             _resultSfx.stop();
             _playedResultSfx = false;
-            
+
             RunGameLoop(true);
 
             break;

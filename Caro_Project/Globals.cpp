@@ -72,7 +72,7 @@ void DuckBGM(float targetVolume, int durationMs)
 {
     if (_sfxQuality == SOUND_MUTED)
         return;
-    _bgmNormalVolume = _bgm.getVolume();   // luôn lấy lại volume
+
     _bgm.setVolume(targetVolume * GetBgmScale());
     _bgmDuckDurationMs = durationMs;
     _bgmDuckClock.restart();
