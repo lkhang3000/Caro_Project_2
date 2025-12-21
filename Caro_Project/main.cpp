@@ -205,7 +205,7 @@ main_menu:
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer);
                                         _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality != SOUND_MUTED)
+                                        if (_sfxQuality != 0.f)
                                             _resultSfx.play();
 
                                         _playedResultSfx = true;
@@ -217,7 +217,7 @@ main_menu:
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_isPvE ? _loseBuffer : _winBuffer);
                                         _resultSfx.setVolume(100.f * GetSfxScale());
-                                        if (_sfxQuality == SOUND_MUTED)
+                                        if (_sfxQuality == 0.f)
                                             return;
                                         _resultSfx.play();
 
@@ -230,6 +230,8 @@ main_menu:
                                         _resultSfx.stop();
                                         _resultSfx.setBuffer(_winBuffer); // dùng win
                                         _resultSfx.setVolume(100.f * GetSfxScale());
+                                        if (_sfxQuality == 0.f)
+                                            return;
                                         _resultSfx.play();
 
                                         _playedResultSfx = true;
