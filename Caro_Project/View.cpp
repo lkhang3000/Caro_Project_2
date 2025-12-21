@@ -2033,70 +2033,59 @@ int handlePauseMenu(sf::RenderWindow& window, sf::Font& font) {
 }
 
 int opponentChoosing(sf::RenderWindow& window) {
+	// 1. Khởi tạo Font và Assets
 	sf::Font font;
 	if (!font.loadFromFile("Assets/font/regular.ttf")) {
-		std::cerr << "Không thể tải font!\n";
+		std::cerr << "Loi font!\n";
 	}
 
-	// 1. Tải Background
 	sf::Texture backgroundT;
 	backgroundT.loadFromFile("Assets/background/background_menu.png");
 	sf::Sprite bg(backgroundT);
-	bg.setScale(scaleX, scaleY); // Sử dụng scale chuẩn của project
+	bg.setScale(scaleX, scaleY);
 
-	// 2. Tải Texture cho 2 nút (Thay tên file đúng với thực tế của bạn)
+	// Texture cho PvP và PvE
 	sf::Texture pvpT, pveT;
-	if (!pvpT.loadFromFile("Assets/button/pvp.png")) std::cerr << "Loi pvp_button\n";
-	if (!pveT.loadFromFile("Assets/button/pve.png")) std::cerr << "Loi pve_button\n";
-
+	pvpT.loadFromFile("Assets/button/pvp.png");
+	pveT.loadFromFile("Assets/button/pve.png");
 	sf::Sprite pvpS(pvpT), pveS(pveT);
 
-	// 3. Thiết lập Scale và Origin
+	// Texture cho Back và Setting (Lấy từ modeChoosing)
+	sf::Texture backT, backDarkT, settingT, settingDarkT;
+	backT.loadFromFile("Assets/button/back.png");
+	backDarkT.loadFromFile("Assets/button/back_off.png");
+	settingT.loadFromFile("Assets/button/setting2_button_on.png");
+	settingDarkT.loadFromFile("Assets/button/setting2_button_off.png");
+
+	sf::Sprite backS(backT), backOffS(backDarkT);
+	sf::Sprite settingS(settingT), settingOffS(settingDarkT);
+
+	// 2. Thiết lập Scale và Vị trí
+	// PvP/PvE
 	pvpS.setScale(scaleX, scaleY);
 	pveS.setScale(scaleX, scaleY);
-
-	// Đặt Origin vào tâm ảnh để căn chỉnh chính xác hơn
 	pvpS.setOrigin(pvpT.getSize().x / 2.f, pvpT.getSize().y / 2.f);
 	pveS.setOrigin(pveT.getSize().x / 2.f, pveT.getSize().y / 2.f);
 
-	// 4. Căn chỉnh vị trí dựa trên ảnh mẫu (Dịch sang phải tâm màn hình một chút)
-	float centerX = 1366.f / 2.f + 60.f; // Dịch sang phải 120px so với trục giữa
-	float pvpY = 445.f; // Vị trí nút Chơi với người
-	float pveY = 570.f; // Vị trí nút Chơi với máy
+	float centerX = 1366.f / 2.f + 60.f;
+	pvpS.setPosition(centerX, 445.f);
+	pveS.setPosition(centerX, 570.f);
 
-	pvpS.setPosition(centerX, pvpY);
-	pveS.setPosition(centerX, pveY);
-
-	int choice = 0; // 0: PvP, 1: PvE
-
-
-	// Nút back và setting
-	sf::Texture backButtonT, backButtonDarkT;
-	sf::Texture settingButtonT, settingButtonDarkT;
-
-	backButtonT.loadFromFile("Assets/button/back.png");
-	backButtonDarkT.loadFromFile("Assets/button/back_off.png");
-	settingButtonT.loadFromFile("Assets/button/setting2_button_on.png");
-	settingButtonDarkT.loadFromFile("Assets/button/setting2_button_off.png");
-
-	sf::Sprite backButtonS(backButtonT);
-	sf::Sprite backButtonDark(backButtonDarkT);
-	sf::Sprite settingS(settingButtonT);
-	sf::Sprite settingDark(settingButtonDarkT);
-
-	backButtonS.setScale(scaleX + 0.05f, scaleY + 0.05f);
-	backButtonDark.setScale(scaleX + 0.05f, scaleY + 0.05f);
-	backButtonS.setPosition(40.f, -40.f);
-	backButtonDark.setPosition(40.f, -40.f);
+	// Back & Setting
+	backS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backOffS.setScale(scaleX + 0.05f, scaleY + 0.05f);
+	backS.setPosition(40.0f, -40.0f);
+	backOffS.setPosition(40.0f, -40.0f);
 
 	settingS.setScale(scaleX - 1.3f, scaleY - 1.3f);
-	settingDark.setScale(scaleX - 1.3f, scaleY - 1.3f);
-	settingS.setPosition(200.f, 15.f);
-	settingDark.setPosition(200.f, 15.f);
+	settingOffS.setScale(scaleX - 1.3f, scaleY - 1.3f);
+	settingS.setPosition(200.0f, 15.0f);
+	settingOffS.setPosition(200.0f, 15.0f);
 
-	int row = 1;        // 0 = top buttons, 1 = PvP/PvE
-	int topChoice = 0;  // 0 = Back, 1 = Setting
-
+	// 3. Logic điều hướng
+	int row = 1;        // 0: Hàng trên (Back/Setting), 1: Hàng dưới (PvP/PvE)
+	int topChoice = 0;  // 0: Back, 1: Setting
+	int mainChoice = 0; // 0: PvP, 1: PvE
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -2107,100 +2096,69 @@ int opponentChoosing(sf::RenderWindow& window) {
 			}
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
-
-					// ===== W / S : LÊN - XUỐNG =====
 				case sf::Keyboard::W:
 				case sf::Keyboard::Up:
-					PlayMoveSFX();
 					if (row == 1) {
-						// Đang ở PvP / PvE -> lên Back/Setting
-						row = 0;
-					}
-					else {
-						// Đang ở Back/Setting -> đổi PvP/PvE
-						choice = (choice - 1 + 2) % 2;
+						if (mainChoice == 1) mainChoice = 0; // Từ PvE lên PvP
+						else row = 0; // Từ PvP lên hàng nút phụ
 					}
 					break;
-
 				case sf::Keyboard::S:
 				case sf::Keyboard::Down:
-					PlayMoveSFX();
-					if (row == 0) {
-						// Đang ở Back/Setting -> xuống PvP/PvE
-						row = 1;
-					}
-					else {
-						// Đang ở PvP / PvE -> đổi PvP/PvE
-						choice = (choice + 1) % 2;
-					}
+					if (row == 0) row = 1; // Từ hàng phụ xuống PvP
+					else if (mainChoice == 0) mainChoice = 1; // Từ PvP xuống PvE
 					break;
-
-					// ===== A / D : TRÁI - PHẢI =====
 				case sf::Keyboard::A:
 				case sf::Keyboard::Left:
-					PlayMoveSFX();
-					if (row == 0) {
-						topChoice = 0; // Back
-					}
+					if (row == 0) topChoice = 0; // Chọn Back
 					break;
-
 				case sf::Keyboard::D:
 				case sf::Keyboard::Right:
-					PlayMoveSFX();
-					if (row == 0) {
-						topChoice = 1; // Setting
-					}
+					if (row == 0) topChoice = 1; // Chọn Setting
 					break;
-
-					// ===== ENTER =====
 				case sf::Keyboard::Enter:
-					PlayClickSFX();
 					if (row == 0) {
-						if (topChoice == 0)
-							return -1;                  // Back
-						else
-							handleSettings(window, font); // Setting
+						if (topChoice == 0) return -1; // Quay lại
+						else handleSettings(window, font); // Mở Setting
 					}
 					else {
-						return choice; // PvP / PvE
+						return mainChoice; // 0: PvP, 1: PvE
 					}
 					break;
-
-					// ===== ESC =====
 				case sf::Keyboard::Escape:
 					return -1;
 				}
 			}
-
-
 		}
 
-		// 5. Hiệu ứng mờ đen (Dimming) giống như code cũ
-		// Nút được chọn để màu trắng (255, 255, 255), nút không chọn để màu xám tối
-		if (choice == 0) {
-			pvpS.setColor(sf::Color::White);
-			pveS.setColor(sf::Color(100, 100, 100, 255)); // Mờ đen nút dưới
-		}
-		else {
-			pvpS.setColor(sf::Color(100, 100, 100, 255)); // Mờ đen nút trên
-			pveS.setColor(sf::Color::White);
-		}
-
+		// 4. Xử lý hiển thị (Highlight)
 		window.clear();
 		window.draw(bg);
+
+		// Vẽ hàng phụ (Back/Setting)
+		if (row == 0 && topChoice == 0) window.draw(backS);
+		else window.draw(backOffS);
+
+		if (row == 0 && topChoice == 1) window.draw(settingS);
+		else window.draw(settingOffS);
+
+		// Vẽ PvP/PvE với hiệu ứng mờ nếu không được chọn
+		if (row == 1 && mainChoice == 0) {
+			pvpS.setColor(sf::Color::White);
+			pveS.setColor(sf::Color(100, 100, 100, 255));
+		}
+		else if (row == 1 && mainChoice == 1) {
+			pvpS.setColor(sf::Color(100, 100, 100, 255));
+			pveS.setColor(sf::Color::White);
+		}
+		else {
+			// Khi đang ở hàng trên, cả 2 nút dưới đều mờ
+			pvpS.setColor(sf::Color(100, 100, 100, 255));
+			pveS.setColor(sf::Color(100, 100, 100, 255));
+		}
+
 		window.draw(pvpS);
 		window.draw(pveS);
-		// Draw Back
-		if (row == 0 && topChoice == 0)
-			window.draw(backButtonS);
-		else
-			window.draw(backButtonDark);
-		// Draw Setting
-		if (row == 0 && topChoice == 1)
-			window.draw(settingS);
-		else
-			window.draw(settingDark);
-
 		window.display();
 	}
 	return -1;
